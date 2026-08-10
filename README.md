@@ -29,6 +29,10 @@
 - **Multi-format output** — terminal tables, Markdown reports, JSON (CI/CD)
 - **Statistical rigor** — implements ENT, NIST SP800-22, and Dieharder test batteries
 
+### Live Demo
+
+Try the Entropy test WebAssembly version online at **[cadiora.com](https://cadiora.com/tools/random/entropy/)** — test random data directly in your browser with no installation required, and no data leaves your PC.
+
 ---
 
 ## Quick Start
