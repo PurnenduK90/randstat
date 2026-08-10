@@ -1,0 +1,10 @@
+[package]
+name    = "randstat-core"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+libm = { workspace = true }
+
+[features]
+default = []

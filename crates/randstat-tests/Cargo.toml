@@ -1,0 +1,11 @@
+[package]
+name    = "randstat-tests"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+randstat-core = { workspace = true }
+libm = { workspace = true }
+
+[features]
+default = []

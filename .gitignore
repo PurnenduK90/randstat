@@ -1,0 +1,96 @@
+# Rust build artifacts
+/target
+**/target/
+
+# WASM build outputs
+*.wasm
+dist/
+*.wasm.map
+
+# Test files and data
+testfiles/
+/tests/testfiles/
+/tests/ent_fourmilab_random/
+
+# Coverage and profiling
+llvm-cov-target/
+*.profraw
+*.profdata
+*.gcda
+*.gcno
+*.gcov
+coverage/
+tarpaulin-report.html
+cobertura.xml
+
+# Benchmark results
+/target/criterion/
+/benches/target/
+benchmark_results.csv
+benchmark_report.html
+
+# Editor and IDE
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.iml
+*.code-workspace
+
+# Rust-specific
+**/*.rs.bk
+*.pdb
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+*.secret
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS-specific
+Thumbs.db
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# Package managers
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build and distribution
+/build/
+/pkg/
+*.tar.gz
+*.zip
+
+# Documentation build artifacts
+/book/
+/docs/_build/
+/docs/.doctrees/
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+.cache/
+
+# JetBrains Rider
+.idea/
+*.sln.iml

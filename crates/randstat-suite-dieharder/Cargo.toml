@@ -1,0 +1,11 @@
+[package]
+name    = "randstat-suite-dieharder"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+name = "randstat_suite_dieharder"
+
+[dependencies]
+randstat-core  = { workspace = true }
+randstat-tests = { workspace = true }

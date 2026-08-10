@@ -1,0 +1,11 @@
+[package]
+name    = "randstat-suite-quick"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+name = "randstat_suite_quick"
+
+[dependencies]
+randstat-core  = { workspace = true }
+randstat-tests = { workspace = true }

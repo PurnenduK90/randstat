@@ -1,0 +1,12 @@
+[package]
+name    = "randstat-cli"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "randstat"
+path = "src/main.rs"
+
+[dependencies]
+randstat-core      = { workspace = true }
+randstat-suite-ent = { workspace = true }

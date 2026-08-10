@@ -1,0 +1,31 @@
+[package]
+name    = "randstat-wasm"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+randstat-core = { workspace = true }
+# Suite crates are optional — pulled in only when the matching feature is enabled
+randstat-suite-ent      = { workspace = true, optional = true }
+randstat-suite-nist     = { workspace = true, optional = true }
+randstat-suite-quick    = { workspace = true, optional = true }
+randstat-suite-full     = { workspace = true, optional = true }
+randstat-suite-dieharder = { workspace = true, optional = true }
+
+[features]
+# math-only: chi2/normal PDF+CDF and plot generators (~3–5 KB WASM)
+default   = ["math-only"]
+math-only = []
+# ent: adds ENT streaming engine (Shannon + Monte Carlo + Serial Corr) (~15–18 KB)
+ent       = ["dep:randstat-suite-ent"]
+# nist: adds all 15 NIST SP800-22 tests (~30 KB)
+nist      = ["dep:randstat-suite-nist"]
+# quick: adds 4-test fast screening suite (~12–15 KB)
+quick     = ["dep:randstat-suite-quick"]
+# full: adds ent + nist together (~35 KB)
+full      = ["dep:randstat-suite-full"]
+# dieharder: stub suite for future Dieharder battery
+dieharder = ["dep:randstat-suite-dieharder"]

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Randstat Pseudorandomness Test & Chi-Square Plot (WASM)</title>
+  <style>
+    body {
+      background: #090d16;
+      color: #f8fafc;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 2rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      max-width: 1000px;
+      width: 100%;
+    }
+    .main-header {
+      margin-bottom: 1.5rem;
+    }
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #38bdf8;
+      margin: 0 0 0.25rem 0;
+    }
+    p.subtitle {
+      color: #94a3b8;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="main-header">
+      <h1>Randstat Pseudorandomness Test & Chi-Square Plot (WASM)</h1>
+      <p class="subtitle">John Walker ENT test suite with Chi-Square & Normal PDF plot markers compiled to WebAssembly.</p>
+    </div>
+
+    <!-- Embeddable Entropy Analyzer Container -->
+    <div id="entropyContainer"></div>
+  </div>
+
+  <!-- Single Minified Bundle Import from dist/ -->
+  <script src="../dist/randstat_ui.min.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      new EntropyAnalyzer('#entropyContainer', {
+        wasmUrl: '../dist/randstat.wasm'
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+[package]
+name    = "randstat-suite-ent"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+name = "randstat_suite_ent"
+
+[dependencies]
+randstat-core  = { workspace = true }
+randstat-tests = { workspace = true }
