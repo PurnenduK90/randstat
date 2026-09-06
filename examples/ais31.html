@@ -148,6 +148,8 @@
       const dropTitle = dropzone.querySelector('.dropzone-title');
       const fileInput = document.getElementById('file-input');
 
+      renderAis31Dashboard(container, runner.finalize(), { initial: true });
+
       async function processFile(file) {
         if (!file) return;
         runner.reset();

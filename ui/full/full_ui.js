@@ -2,13 +2,26 @@
  * Multi-Suite Meta-Dashboard UI.
  * Renders an aggregated view containing all 8 test batteries in a cohesive tabbed dashboard.
  */
-function renderFullDashboard(container, fullData) {
+function renderFullDashboard(container, fullData, options = {}) {
   if (!container || !fullData) return;
+  const isInitial = options.initial === true || !fullData.totalBytes || fullData.totalBytes === 0;
 
   const { totalBytes, sha256, ent, nist, ais31, dieharder, sp80090b, testu01, practrand, gjrand } = fullData;
 
   const entPassed = ent && ent.evaluation && ent.evaluation.overallStatus === 'PASS';
-  const entStatus = ent && ent.evaluation ? ent.evaluation.overallStatus : 'UNKNOWN';
+  const entStatus = isInitial ? 'READY' : (ent && ent.evaluation ? ent.evaluation.overallStatus : 'UNKNOWN');
+
+  const streamInfo = isInitial
+    ? `Stream Size: <strong style="color: #f8fafc;">0 bytes</strong> | Status: <strong style="color: #38bdf8;">Ready for test input</strong>`
+    : `Stream Size: <strong style="color: #f8fafc;">${(totalBytes || 0).toLocaleString()} bytes</strong> (${((totalBytes || 0) / 1024).toFixed(2)} KB) | SHA-256: <strong style="color: #38bdf8;">${sha256 ? sha256.slice(0, 16) + '...' + sha256.slice(48) : 'N/A'}</strong>`;
+
+  const getCounter = (suite) => {
+    if (!suite) return '—';
+    if (isInitial) {
+      return `${suite.implementedCount}/${suite.totalTests}`;
+    }
+    return `${suite.passedCount}/${suite.totalTests}`;
+  };
 
   container.innerHTML = `
     <div class="randstat-full-dashboard" style="font-family: system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; gap: 20px;">
@@ -19,11 +32,11 @@ function renderFullDashboard(container, fullData) {
           <div style="display: flex; align-items: center; gap: 10px;">
             <span style="font-size: 1.25rem; font-weight: 700; color: #fff;">Randomness Battery Synthesis</span>
             <span style="font-size: 0.8rem; font-weight: 700; padding: 3px 10px; border-radius: 12px; background: #10b98122; color: #10b981; border: 1px solid #10b981;">
-              8 SUITES STREAMED
+              8 SUITES ${isInitial ? 'READY' : 'STREAMED'}
             </span>
           </div>
           <div style="font-size: 0.82rem; color: #94a3b8; margin-top: 6px; font-family: ui-monospace, monospace;">
-            Stream Size: <strong style="color: #f8fafc;">${totalBytes.toLocaleString()} bytes</strong> (${(totalBytes / 1024).toFixed(2)} KB) | SHA-256: <strong style="color: #38bdf8;">${sha256.slice(0, 16)}...${sha256.slice(48)}</strong>
+            ${streamInfo}
           </div>
         </div>
 
@@ -31,35 +44,35 @@ function renderFullDashboard(container, fullData) {
         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
           <div style="background: #0f172a; padding: 6px 10px; border-radius: 6px; border: 1px solid #334155; text-align: center;">
             <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 600;">ENT</div>
-            <div style="font-size: 0.85rem; font-weight: 700; color: ${entPassed ? '#10b981' : '#f59e0b'};">${entStatus}</div>
+            <div style="font-size: 0.85rem; font-weight: 700; color: ${isInitial ? '#38bdf8' : (entPassed ? '#10b981' : '#f59e0b')};">${entStatus}</div>
           </div>
           <div style="background: #0f172a; padding: 6px 10px; border-radius: 6px; border: 1px solid #334155; text-align: center;">
             <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 600;">NIST 800-22</div>
-            <div style="font-size: 0.85rem; font-weight: 700; color: #38bdf8;">${nist.passedCount}/${nist.totalTests}</div>
+            <div style="font-size: 0.85rem; font-weight: 700; color: #38bdf8;">${getCounter(nist)}</div>
           </div>
           <div style="background: #0f172a; padding: 6px 10px; border-radius: 6px; border: 1px solid #334155; text-align: center;">
             <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 600;">AIS 31</div>
-            <div style="font-size: 0.85rem; font-weight: 700; color: #38bdf8;">${ais31.passedCount}/${ais31.totalTests}</div>
+            <div style="font-size: 0.85rem; font-weight: 700; color: #38bdf8;">${getCounter(ais31)}</div>
           </div>
           <div style="background: #0f172a; padding: 6px 10px; border-radius: 6px; border: 1px solid #334155; text-align: center;">
             <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 600;">Dieharder</div>
-            <div style="font-size: 0.85rem; font-weight: 700; color: #38bdf8;">${dieharder.passedCount}/${dieharder.totalTests}</div>
+            <div style="font-size: 0.85rem; font-weight: 700; color: #38bdf8;">${getCounter(dieharder)}</div>
           </div>
           <div style="background: #0f172a; padding: 6px 10px; border-radius: 6px; border: 1px solid #334155; text-align: center;">
             <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 600;">SP 800-90B</div>
-            <div style="font-size: 0.85rem; font-weight: 700; color: #38bdf8;">${sp80090b.passedCount}/${sp80090b.totalTests}</div>
+            <div style="font-size: 0.85rem; font-weight: 700; color: #38bdf8;">${getCounter(sp80090b)}</div>
           </div>
           <div style="background: #0f172a; padding: 6px 10px; border-radius: 6px; border: 1px solid #334155; text-align: center;">
             <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 600;">TestU01</div>
-            <div style="font-size: 0.85rem; font-weight: 700; color: #38bdf8;">${testu01.passedCount}/${testu01.totalTests}</div>
+            <div style="font-size: 0.85rem; font-weight: 700; color: #38bdf8;">${getCounter(testu01)}</div>
           </div>
           <div style="background: #0f172a; padding: 6px 10px; border-radius: 6px; border: 1px solid #334155; text-align: center;">
             <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 600;">PractRand</div>
-            <div style="font-size: 0.85rem; font-weight: 700; color: #38bdf8;">${practrand.passedCount}/${practrand.totalTests}</div>
+            <div style="font-size: 0.85rem; font-weight: 700; color: #38bdf8;">${getCounter(practrand)}</div>
           </div>
           <div style="background: #0f172a; padding: 6px 10px; border-radius: 6px; border: 1px solid #334155; text-align: center;">
             <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 600;">gjrand</div>
-            <div style="font-size: 0.85rem; font-weight: 700; color: #38bdf8;">${gjrand.passedCount}/${gjrand.totalTests}</div>
+            <div style="font-size: 0.85rem; font-weight: 700; color: #38bdf8;">${getCounter(gjrand)}</div>
           </div>
         </div>
       </div>
@@ -99,28 +112,28 @@ function renderFullDashboard(container, fullData) {
   const gjrandPanel = container.querySelector('#full-panel-gjrand');
 
   if (typeof renderEntDashboard === 'function' && ent) {
-    renderEntDashboard(entPanel, ent.result, ent.evaluation);
+    renderEntDashboard(entPanel, ent.result, ent.evaluation, { initial: isInitial });
   }
   if (typeof renderNistDashboard === 'function' && nist) {
-    renderNistDashboard(nistPanel, nist);
+    renderNistDashboard(nistPanel, nist, { initial: isInitial });
   }
   if (typeof renderAis31Dashboard === 'function' && ais31) {
-    renderAis31Dashboard(aisPanel, ais31);
+    renderAis31Dashboard(aisPanel, ais31, { initial: isInitial });
   }
   if (typeof renderDieharderDashboard === 'function' && dieharder) {
-    renderDieharderDashboard(dieharderPanel, dieharder);
+    renderDieharderDashboard(dieharderPanel, dieharder, { initial: isInitial });
   }
   if (typeof renderSp80090bDashboard === 'function' && sp80090b) {
-    renderSp80090bDashboard(spPanel, sp80090b);
+    renderSp80090bDashboard(spPanel, sp80090b, { initial: isInitial });
   }
   if (typeof renderTestU01Dashboard === 'function' && testu01) {
-    renderTestU01Dashboard(testu01Panel, testu01);
+    renderTestU01Dashboard(testu01Panel, testu01, { initial: isInitial });
   }
   if (typeof renderPractRandDashboard === 'function' && practrand) {
-    renderPractRandDashboard(practrandPanel, practrand);
+    renderPractRandDashboard(practrandPanel, practrand, { initial: isInitial });
   }
   if (typeof renderGjrandDashboard === 'function' && gjrand) {
-    renderGjrandDashboard(gjrandPanel, gjrand);
+    renderGjrandDashboard(gjrandPanel, gjrand, { initial: isInitial });
   }
 
   // Tab switching logic

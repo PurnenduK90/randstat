@@ -54,24 +54,54 @@ impl GjrandSuite {
     pub fn evaluate(&self) -> GjrandEvaluation {
         let entries = [
             GjrandTestEntry {
-                name: "Uniformity (Chi-Square)",
-                profile: "Standard",
-                result: self.chi_square.evaluate(),
+                name: "mcoll16",
+                profile: "16-bit",
+                result: TestResult::NOT_IMPLEMENTED,
             },
             GjrandTestEntry {
-                name: "Word Correlation",
-                profile: "Standard",
-                result: self.serial_corr.evaluate(),
+                name: "mcoll32",
+                profile: "32-bit",
+                result: TestResult::NOT_IMPLEMENTED,
             },
             GjrandTestEntry {
-                name: "Run Structure",
-                profile: "Standard",
-                result: self.runs.evaluate(),
+                name: "mprob16",
+                profile: "16-bit",
+                result: TestResult::NOT_IMPLEMENTED,
             },
             GjrandTestEntry {
-                name: "Poker Variations",
-                profile: "Standard",
-                result: self.poker.evaluate(),
+                name: "mprob32",
+                profile: "32-bit",
+                result: TestResult::NOT_IMPLEMENTED,
+            },
+            GjrandTestEntry {
+                name: "mdist16",
+                profile: "16-bit",
+                result: TestResult::NOT_IMPLEMENTED,
+            },
+            GjrandTestEntry {
+                name: "mdist32",
+                profile: "32-bit",
+                result: TestResult::NOT_IMPLEMENTED,
+            },
+            GjrandTestEntry {
+                name: "mgap16",
+                profile: "16-bit",
+                result: TestResult::NOT_IMPLEMENTED,
+            },
+            GjrandTestEntry {
+                name: "mgap32",
+                profile: "32-bit",
+                result: TestResult::NOT_IMPLEMENTED,
+            },
+            GjrandTestEntry {
+                name: "mrun16",
+                profile: "16-bit",
+                result: TestResult::NOT_IMPLEMENTED,
+            },
+            GjrandTestEntry {
+                name: "mrun32",
+                profile: "32-bit",
+                result: TestResult::NOT_IMPLEMENTED,
             },
         ];
 
@@ -124,7 +154,7 @@ pub struct GjrandTestEntry {
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct GjrandEvaluation {
-    pub entries: [GjrandTestEntry; 4],
+    pub entries: [GjrandTestEntry; 10],
     pub total_tests: usize,
     pub implemented_count: usize,
     pub passed_count: usize,
@@ -142,9 +172,9 @@ mod tests {
         let sample = [0xAA; 128];
         suite.update(&sample);
         let eval = suite.evaluate();
-        assert_eq!(eval.total_tests, 4);
-        assert_eq!(eval.implemented_count, 4);
-        assert_eq!(eval.skipped_count, 0);
+        assert_eq!(eval.total_tests, 10);
+        assert_eq!(eval.implemented_count, 0);
+        assert_eq!(eval.skipped_count, 10);
         suite.reset();
         assert_eq!(suite.total_bytes, 0);
     }

@@ -116,6 +116,8 @@ mod tests {
         let eval = suite.evaluate();
         assert_eq!(eval.nist.total_tests, 15);
         assert_eq!(eval.ais31.total_tests, 9);
+        assert_eq!(eval.gjrand.total_tests, 10);
+        assert_eq!(eval.practrand.total_tests, 10);
 
         let mut default_suite = FullSuite::default();
         default_suite.update(&[1, 2, 3]);

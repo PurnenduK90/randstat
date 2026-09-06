@@ -629,8 +629,9 @@ class EntropyAnalyzer {
  * Functional Fourmilab ENT Dashboard Renderer.
  * Renders the standardized 6-test ENT evaluation table and metrics.
  */
-function renderEntDashboard(container, result, evaluation) {
+function renderEntDashboard(container, result, evaluation, options = {}) {
   if (!container || !result) return;
+  const isInitial = options.initial === true || result.totalBytes === 0;
 
   const evalObj = evaluation || {
     overallStatus: 'PASS',
@@ -644,7 +645,9 @@ function renderEntDashboard(container, result, evaluation) {
   };
 
   const getBadge = (status) => {
-    if (status === 'PASS') {
+    if (isInitial) {
+      return '<span style="background:#0284c722;color:#38bdf8;border:1px solid #38bdf844;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">READY</span>';
+    } else if (status === 'PASS') {
       return '<span style="background:#10b981;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">PASS</span>';
     } else if (status === 'WARN') {
       return '<span style="background:#f59e0b;color:#1e293b;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">WARN</span>';
@@ -665,34 +668,37 @@ function renderEntDashboard(container, result, evaluation) {
   const piErrFormatted = (evalObj.piErrorPercent != null) ? evalObj.piErrorPercent.toFixed(4) + '%' : '0.0000%';
   const scFormatted = (result.serialCorrelation != null) ? result.serialCorrelation.toFixed(6) : '0.000000';
 
-  const rows = [
-    { id: "ENT01", name: "Shannon Entropy", ideal: "8.000000 bits/byte", val: `${entropyFormatted} bits/byte`, badge: getBadge(evalObj.entropyStatus) },
-    { id: "ENT02", name: "Optimum Compression", ideal: "0.00% reduction", val: compressFormatted, badge: getBadge(evalObj.entropyStatus) },
-    { id: "ENT03", name: "Chi-Square Uniformity (χ²)", ideal: "df = 255 (p = 0.500)", val: `${chiFormatted} (exceed: ${exceedFormatted})`, badge: getBadge(evalObj.chiSquareStatus) },
-    { id: "ENT04", name: "Arithmetic Mean", ideal: "127.5000", val: meanFormatted, badge: getBadge(evalObj.meanStatus) },
-    { id: "ENT05", name: "Monte Carlo Pi", ideal: "3.14159265", val: `${piFormatted} (err: ${piErrFormatted})`, badge: getBadge(evalObj.piStatus) },
-    { id: "ENT06", name: "Serial Correlation (Lag-1)", ideal: "0.000000", val: scFormatted, badge: getBadge(evalObj.serialCorrelationStatus) },
-  ].map(r => `
+  const testItems = [
+    { id: "ENT01", name: "Shannon Entropy", ideal: "8.000000 bits/byte", val: isInitial ? "—" : `${entropyFormatted} bits/byte`, status: evalObj.entropyStatus },
+    { id: "ENT02", name: "Optimum Compression", ideal: "0.00% reduction", val: isInitial ? "—" : compressFormatted, status: evalObj.entropyStatus },
+    { id: "ENT03", name: "Chi-Square Uniformity (χ²)", ideal: "df = 255 (p = 0.500)", val: isInitial ? "—" : `${chiFormatted} (exceed: ${exceedFormatted})`, status: evalObj.chiSquareStatus },
+    { id: "ENT04", name: "Arithmetic Mean", ideal: "127.5000", val: isInitial ? "—" : meanFormatted, status: evalObj.meanStatus },
+    { id: "ENT05", name: "Monte Carlo Pi", ideal: "3.14159265", val: isInitial ? "—" : `${piFormatted} (err: ${piErrFormatted})`, status: evalObj.piStatus },
+    { id: "ENT06", name: "Serial Correlation (Lag-1)", ideal: "0.000000", val: isInitial ? "—" : scFormatted, status: evalObj.serialCorrelationStatus },
+  ];
+
+  const rows = testItems.map(r => `
     <tr style="border-bottom:1px solid #1e293b;">
       <td style="padding:10px;color:#94a3b8;font-family:monospace;">${r.id}</td>
       <td style="padding:10px;font-weight:600;color:#f8fafc;">${r.name}</td>
       <td style="padding:10px;color:#cbd5e1;font-size:12px;font-family:monospace;">${r.ideal}</td>
       <td style="padding:10px;color:#38bdf8;font-family:monospace;">${r.val}</td>
-      <td style="padding:10px;">${r.badge}</td>
+      <td style="padding:10px;">${getBadge(r.status)}</td>
     </tr>
   `).join('');
 
-  const passedCount = ['entropyStatus', 'chiSquareStatus', 'meanStatus', 'piStatus', 'serialCorrelationStatus']
-    .filter(k => evalObj[k] === 'PASS').length;
+  const passedCount = testItems.filter(r => r.status === 'PASS').length;
+
+  const statusSummary = isInitial
+    ? `Active: <strong style="color:#38bdf8;">6 / 6</strong> | Status: <strong style="color:#38bdf8;">Ready for test input</strong>`
+    : `Active: <strong style="color:#38bdf8;">6 / 6</strong> | Passed: <strong style="color:#10b981;">${passedCount}</strong> | Overall: <strong style="color:${evalObj.overallStatus === 'PASS' ? '#10b981' : '#f59e0b'};">${evalObj.overallStatus}</strong>`;
 
   container.innerHTML = `
     <div class="randstat-ent-card" style="font-family:system-ui,-apple-system,sans-serif;background:#0f172a;color:#f8fafc;padding:24px;border-radius:12px;border:1px solid #1e293b;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
         <h3 style="margin:0;font-size:18px;font-weight:700;color:#38bdf8;">Fourmilab ENT Randomness Battery</h3>
         <div style="font-size:12px;color:#94a3b8;">
-          Active: <strong style="color:#38bdf8;">6 / 6</strong> | 
-          Passed: <strong style="color:#10b981;">${passedCount}</strong> | 
-          Overall: <strong style="color:${evalObj.overallStatus === 'PASS' ? '#10b981' : '#f59e0b'};">${evalObj.overallStatus}</strong>
+          ${statusSummary}
         </div>
       </div>
 

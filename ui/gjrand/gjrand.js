@@ -1,6 +1,6 @@
 /**
  * WASM gjrand Lightweight PRNG Test Suite runner.
- * Evaluates streaming byte chunks against the gjrand tests.
+ * Evaluates streaming byte chunks against the 10 gjrand tests.
  */
 class GjrandRunner {
   constructor(wasmInstance) {
@@ -46,17 +46,23 @@ class GjrandRunner {
     const view = new DataView(this.memory.buffer);
 
     const testNames = [
-      { id: "GJ01", name: "Uniformity (Chi-Square)", profile: "Standard" },
-      { id: "GJ02", name: "Word Correlation", profile: "Standard" },
-      { id: "GJ03", name: "Run Structure", profile: "Standard" },
-      { id: "GJ04", name: "Poker Variations", profile: "Standard" },
+      { id: "GJ01", name: "mcoll16", profile: "16-bit" },
+      { id: "GJ02", name: "mcoll32", profile: "32-bit" },
+      { id: "GJ03", name: "mprob16", profile: "16-bit" },
+      { id: "GJ04", name: "mprob32", profile: "32-bit" },
+      { id: "GJ05", name: "mdist16", profile: "16-bit" },
+      { id: "GJ06", name: "mdist32", profile: "32-bit" },
+      { id: "GJ07", name: "mgap16", profile: "16-bit" },
+      { id: "GJ08", name: "mgap32", profile: "32-bit" },
+      { id: "GJ09", name: "mrun16", profile: "16-bit" },
+      { id: "GJ10", name: "mrun32", profile: "32-bit" },
     ];
 
     const statusMap = ["NOT IMPLEMENTED", "PASS", "FAIL", "INSUFFICIENT DATA"];
     const entries = [];
 
     let offset = evalPtr;
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 10; i++) {
       const stat = view.getFloat64(offset + 16, true);
       const pval = view.getFloat64(offset + 24, true);
       const passed = view.getUint8(offset + 32) !== 0;
@@ -84,7 +90,7 @@ class GjrandRunner {
 
     return {
       entries,
-      totalTests: totalTests || 4,
+      totalTests: totalTests || 10,
       implementedCount,
       passedCount,
       failedCount,

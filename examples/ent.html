@@ -148,6 +148,8 @@
       const dropTitle = dropzone.querySelector('.dropzone-title');
       const fileInput = document.getElementById('file-input');
 
+      renderEntDashboard(container, runner.finalize(), runner.validate(0.05), { initial: true });
+
       async function processFile(file) {
         if (!file) return;
         runner.reset();

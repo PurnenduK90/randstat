@@ -5,10 +5,15 @@
 
 function renderNistDashboard(container, evalResult, options = {}) {
   if (!container || !evalResult) return;
+  const isInitial = options.initial === true;
 
   const rows = evalResult.entries.map(e => {
     let badge = '';
-    if (e.status === 'PASS') {
+    if (e.status === 'NOT IMPLEMENTED') {
+      badge = '<span style="background:#334155;color:#94a3b8;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">NOT IMPLEMENTED</span>';
+    } else if (isInitial) {
+      badge = '<span style="background:#0284c722;color:#38bdf8;border:1px solid #38bdf844;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">READY</span>';
+    } else if (e.status === 'PASS') {
       badge = '<span style="background:#10b981;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">PASS</span>';
     } else if (e.status === 'FAIL') {
       badge = '<span style="background:#f43f5e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">FAIL</span>';
@@ -18,8 +23,8 @@ function renderNistDashboard(container, evalResult, options = {}) {
       badge = '<span style="background:#334155;color:#94a3b8;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">NOT IMPLEMENTED</span>';
     }
 
-    const statStr = e.statistic != null ? e.statistic.toFixed(4) : 'N/A';
-    const pvalStr = e.pValue != null ? e.pValue.toFixed(4) : 'N/A';
+    const statStr = isInitial ? '—' : (e.statistic != null ? e.statistic.toFixed(4) : 'N/A');
+    const pvalStr = isInitial ? '—' : (e.pValue != null ? e.pValue.toFixed(4) : 'N/A');
 
     return `
       <tr style="border-bottom:1px solid #1e293b;">
@@ -32,14 +37,16 @@ function renderNistDashboard(container, evalResult, options = {}) {
     `;
   }).join('');
 
+  const statusSummary = isInitial
+    ? `Active: <strong style="color:#38bdf8;">${evalResult.implementedCount} / ${evalResult.totalTests}</strong> | Status: <strong style="color:#38bdf8;">Ready for test input</strong>`
+    : `Active: <strong style="color:#38bdf8;">${evalResult.implementedCount} / ${evalResult.totalTests}</strong> | Passed: <strong style="color:#10b981;">${evalResult.passedCount}</strong> | Failed: <strong style="color:#f43f5e;">${evalResult.failedCount}</strong>`;
+
   const html = `
     <div class="randstat-nist-card" style="font-family:system-ui,sans-serif;background:#0f172a;color:#f8fafc;padding:24px;border-radius:12px;border:1px solid #1e293b;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
         <h3 style="margin:0;font-size:18px;font-weight:700;color:#38bdf8;">NIST SP 800-22 Rev. 1a Test Suite</h3>
         <div style="font-size:12px;color:#94a3b8;">
-          Active: <strong style="color:#38bdf8;">${evalResult.implementedCount} / ${evalResult.totalTests}</strong> | 
-          Passed: <strong style="color:#10b981;">${evalResult.passedCount}</strong> | 
-          Failed: <strong style="color:#f43f5e;">${evalResult.failedCount}</strong>
+          ${statusSummary}
         </div>
       </div>
 

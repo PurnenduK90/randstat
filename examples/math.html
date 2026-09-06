@@ -204,8 +204,11 @@
 
         const pLo = alpha / 2.0;
         const pHi = 1.0 - pLo;
-        const lowerCutoff = wasmInstance.exports.chi2_critical_value_export(pLo, df);
-        const upperCutoff = wasmInstance.exports.chi2_critical_value_export(pHi, df);
+        // chi2_critical_value takes exceedance/upper-tail probability.
+        // Lower cutoff corresponds to CDF = pLo (exceedance = 1.0 - pLo = pHi).
+        // Upper cutoff corresponds to CDF = pHi (exceedance = pLo).
+        const lowerCutoff = wasmInstance.exports.chi2_critical_value_export(pHi, df);
+        const upperCutoff = wasmInstance.exports.chi2_critical_value_export(pLo, df);
         const pVal = wasmInstance.exports.chi2_pochisq(sample, Math.round(df));
 
         document.getElementById('stat-lower').textContent = lowerCutoff.toFixed(2);

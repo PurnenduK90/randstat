@@ -9,6 +9,8 @@ use randstat_core::traits::{StreamTest, TestResult, TestStatus};
 use randstat_tests::frequency::chi_square::ChiSquareTest;
 use randstat_tests::frequency::monobit::MonobitTest;
 use randstat_tests::frequency::poker::PokerTest;
+use randstat_tests::matrix::binary_matrix_rank::BinaryMatrixRankTest;
+use randstat_tests::spatial::serial_correlation::SerialCorrelationTest;
 
 /// Zero-alloc PractRand streaming battery.
 #[derive(Debug, Clone, Copy)]
@@ -16,6 +18,8 @@ pub struct PractRandSuite {
     pub monobit: MonobitTest,
     pub poker: PokerTest,
     pub chi_square: ChiSquareTest,
+    pub matrix_rank: BinaryMatrixRankTest,
+    pub serial_corr: SerialCorrelationTest,
     pub total_bytes: u64,
 }
 
@@ -24,6 +28,8 @@ impl PractRandSuite {
         monobit: MonobitTest::new(),
         poker: PokerTest::new(),
         chi_square: ChiSquareTest::new(),
+        matrix_rank: BinaryMatrixRankTest::new(),
+        serial_corr: SerialCorrelationTest::new(),
         total_bytes: 0,
     };
 
@@ -37,6 +43,8 @@ impl PractRandSuite {
         self.monobit.update(chunk);
         self.poker.update(chunk);
         self.chi_square.update(chunk);
+        self.matrix_rank.update(chunk);
+        self.serial_corr.update(chunk);
         self.total_bytes += chunk.len() as u64;
     }
 
@@ -44,40 +52,62 @@ impl PractRandSuite {
         self.monobit.reset();
         self.poker.reset();
         self.chi_square.reset();
+        self.matrix_rank.reset();
+        self.serial_corr.reset();
         self.total_bytes = 0;
     }
 
     pub fn evaluate(&self) -> PractRandEvaluation {
         let entries = [
             PractRandTestEntry {
-                name: "BCFN (Binary Cell Finite Number)",
-                test_type: "Linear / Folding",
-                result: self.monobit.evaluate(),
-            },
-            PractRandTestEntry {
-                name: "Gap-16",
-                test_type: "Frequency / Distance",
-                result: self.poker.evaluate(),
-            },
-            PractRandTestEntry {
-                name: "FPFT (Fourier Transform)",
-                test_type: "Spectral",
+                name: "Gap-16:B",
+                test_type: "[Low1/8]",
                 result: TestResult::NOT_IMPLEMENTED,
             },
             PractRandTestEntry {
-                name: "BRank (Binary Matrix Rank)",
-                test_type: "Matrix",
+                name: "FPF-16:B",
+                test_type: "[Low1/8]",
                 result: TestResult::NOT_IMPLEMENTED,
             },
             PractRandTestEntry {
-                name: "DC6 (Distance to Cube)",
-                test_type: "Spatial",
+                name: "BCFN(2+0,13/64)",
+                test_type: "[Low1/8]",
                 result: TestResult::NOT_IMPLEMENTED,
             },
             PractRandTestEntry {
-                name: "Dist-1to4",
-                test_type: "Distribution",
-                result: self.chi_square.evaluate(),
+                name: "BCFN(2+1,13/64)",
+                test_type: "[Low1/8]",
+                result: TestResult::NOT_IMPLEMENTED,
+            },
+            PractRandTestEntry {
+                name: "DC6-9x1Bytes-1",
+                test_type: "[Low4/8]",
+                result: TestResult::NOT_IMPLEMENTED,
+            },
+            PractRandTestEntry {
+                name: "BRank(12)",
+                test_type: "[Low4/8]",
+                result: TestResult::NOT_IMPLEMENTED,
+            },
+            PractRandTestEntry {
+                name: "FPF-8:all64k",
+                test_type: "[Low8/8]",
+                result: TestResult::NOT_IMPLEMENTED,
+            },
+            PractRandTestEntry {
+                name: "Dist-64x2:g",
+                test_type: "[Low8/8]",
+                result: TestResult::NOT_IMPLEMENTED,
+            },
+            PractRandTestEntry {
+                name: "Gap-8:all64k",
+                test_type: "[Low8/8]",
+                result: TestResult::NOT_IMPLEMENTED,
+            },
+            PractRandTestEntry {
+                name: "AutoCor-64",
+                test_type: "[Low8/8]",
+                result: TestResult::NOT_IMPLEMENTED,
             },
         ];
 
@@ -130,7 +160,7 @@ pub struct PractRandTestEntry {
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct PractRandEvaluation {
-    pub entries: [PractRandTestEntry; 6],
+    pub entries: [PractRandTestEntry; 10],
     pub total_tests: usize,
     pub implemented_count: usize,
     pub passed_count: usize,
@@ -148,9 +178,9 @@ mod tests {
         let sample = [0xAA; 128];
         suite.update(&sample);
         let eval = suite.evaluate();
-        assert_eq!(eval.total_tests, 6);
-        assert_eq!(eval.implemented_count, 3);
-        assert_eq!(eval.skipped_count, 3);
+        assert_eq!(eval.total_tests, 10);
+        assert_eq!(eval.implemented_count, 0);
+        assert_eq!(eval.skipped_count, 10);
         suite.reset();
         assert_eq!(suite.total_bytes, 0);
     }

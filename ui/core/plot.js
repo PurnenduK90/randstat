@@ -46,7 +46,7 @@ function renderDistributionPlot(canvas, chi2Points, normalPoints, options = {}) 
 
   // Handle high-DPI scaling
   const displayWidth = canvas.clientWidth || 800;
-  const displayHeight = canvas.clientHeight || 300;
+  const displayHeight = canvas.clientHeight || 350;
   if (canvas.width !== displayWidth * dpr || canvas.height !== displayHeight * dpr) {
     canvas.width = displayWidth * dpr;
     canvas.height = displayHeight * dpr;
@@ -54,7 +54,7 @@ function renderDistributionPlot(canvas, chi2Points, normalPoints, options = {}) 
   ctx.save();
   ctx.scale(dpr, dpr);
 
-  const padding = { top: 35, right: 35, bottom: 45, left: 55 };
+  const padding = { top: 48, right: 35, bottom: 52, left: 55 };
   const width = displayWidth - padding.left - padding.right;
   const height = displayHeight - padding.top - padding.bottom;
 
@@ -67,53 +67,65 @@ function renderDistributionPlot(canvas, chi2Points, normalPoints, options = {}) 
 
   const yMaxChi2 = Math.max(...chi2Points.map(p => p.y));
   const yMaxNorm = normalPoints && normalPoints.length > 0 ? Math.max(...normalPoints.map(p => p.y)) : 0;
-  const yMax = Math.max(yMaxChi2, yMaxNorm) * 1.15 || 0.02;
+  // 30% headroom ensures curve peak never collides with sample badges or headers
+  const yMax = Math.max(yMaxChi2, yMaxNorm) * 1.30 || 0.02;
 
   const toScreenX = (x) => padding.left + ((x - xMin) / (xMax - xMin)) * width;
   const toScreenY = (y) => padding.top + height - (y / yMax) * height;
 
-  const lowerCutoff = options.lowerCutoff != null ? options.lowerCutoff : 218.42;
-  const upperCutoff = options.upperCutoff != null ? options.upperCutoff : 293.25;
+  // Defensively ensure lower <= upper to prevent negative widths/inverted regions
+  const rawLower = options.lowerCutoff != null ? options.lowerCutoff : 218.42;
+  const rawUpper = options.upperCutoff != null ? options.upperCutoff : 293.25;
+  const lowerCutoff = Math.min(rawLower, rawUpper);
+  const upperCutoff = Math.max(rawLower, rawUpper);
 
   // --- 1. Draw 3 Decision Regions (Matching Verdict Colors & Naming) ---
-  const screenLower = toScreenX(lowerCutoff);
-  const screenUpper = toScreenX(upperCutoff);
   const screenLeft = padding.left;
   const screenRight = padding.left + width;
+  const screenLower = Math.max(screenLeft, Math.min(screenRight, toScreenX(lowerCutoff)));
+  const screenUpper = Math.max(screenLeft, Math.min(screenRight, toScreenX(upperCutoff)));
 
   // Region A: TOO UNIFORM (x < lowerCutoff) - Amber
-  ctx.fillStyle = 'rgba(245, 158, 11, 0.10)';
+  ctx.fillStyle = 'rgba(245, 158, 11, 0.08)';
   ctx.fillRect(screenLeft, padding.top, Math.max(0, screenLower - screenLeft), height);
 
   // Region B: LIKELY RANDOM (lowerCutoff <= x <= upperCutoff) - Emerald Green
-  ctx.fillStyle = 'rgba(16, 185, 129, 0.10)';
+  ctx.fillStyle = 'rgba(16, 185, 129, 0.08)';
   ctx.fillRect(screenLower, padding.top, Math.max(0, screenUpper - screenLower), height);
 
   // Region C: NON-UNIFORM (x > upperCutoff) - Rose Red
-  ctx.fillStyle = 'rgba(244, 63, 94, 0.10)';
+  ctx.fillStyle = 'rgba(244, 63, 94, 0.08)';
   ctx.fillRect(screenUpper, padding.top, Math.max(0, screenRight - screenUpper), height);
 
-  // Decision Region Labels at Top
+  // --- 2. Top Decision Region Header Badges (Cleanly placed above plot area) ---
   ctx.font = '600 11px system-ui, sans-serif';
   ctx.textAlign = 'center';
 
-  // Left Label
-  if (screenLower - screenLeft > 40) {
+  // Region A Header
+  const wA = screenLower - screenLeft;
+  if (wA > 65) {
     ctx.fillStyle = '#f59e0b';
-    ctx.fillText('⚠ ARTIFICIAL UNIFORMITY/STRUCTURED', (screenLeft + screenLower) / 2, padding.top + 16);
+    const textA = wA > 130 ? '⚠ TOO UNIFORM' : '⚠ UNIFORM';
+    ctx.fillText(textA, (screenLeft + screenLower) / 2, 24);
   }
 
-  // Center Label
-  ctx.fillStyle = '#10b981';
-  ctx.fillText('✓ LIKELY RANDOM', (screenLower + screenUpper) / 2, padding.top + 16);
+  // Region B Header
+  const wB = screenUpper - screenLower;
+  if (wB > 65) {
+    ctx.fillStyle = '#10b981';
+    const textB = wB > 140 ? '✓ LIKELY RANDOM (PASS)' : '✓ RANDOM (PASS)';
+    ctx.fillText(textB, (screenLower + screenUpper) / 2, 24);
+  }
 
-  // Right Label
-  if (screenRight - screenUpper > 40) {
+  // Region C Header
+  const wC = screenRight - screenUpper;
+  if (wC > 65) {
     ctx.fillStyle = '#f43f5e';
-    ctx.fillText('⚠ LIKELY BIASED/ANOMALY', (screenUpper + screenRight) / 2, padding.top + 16);
+    const textC = wC > 130 ? '❌ NON-UNIFORM (FAIL)' : '❌ FAIL';
+    ctx.fillText(textC, (screenUpper + screenRight) / 2, 24);
   }
 
-  // --- 2. Draw Grid & Axes ---
+  // --- 3. Draw Grid & Axes ---
   ctx.strokeStyle = '#1e293b';
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -142,7 +154,7 @@ function renderDistributionPlot(canvas, chi2Points, normalPoints, options = {}) 
     ctx.fillText(xVal.toFixed(1), sx, padding.top + height + 18);
   }
 
-  // --- 3. Draw Normal Distribution Curve ---
+  // --- 4. Draw Normal Distribution Curve ---
   if (normalPoints && normalPoints.length > 0) {
     ctx.beginPath();
     ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)';
@@ -158,7 +170,7 @@ function renderDistributionPlot(canvas, chi2Points, normalPoints, options = {}) 
     ctx.setLineDash([]);
   }
 
-  // --- 4. Draw Chi-Square Distribution Curve ---
+  // --- 5. Draw Chi-Square Distribution Curve ---
   ctx.beginPath();
   ctx.strokeStyle = '#38bdf8';
   ctx.lineWidth = 2.5;
@@ -170,7 +182,7 @@ function renderDistributionPlot(canvas, chi2Points, normalPoints, options = {}) 
   }
   ctx.stroke();
 
-  // --- 5. Draw Lower & Upper Cutoff Lines ---
+  // --- 6. Draw Lower & Upper Cutoff Lines ---
   const drawCutoffLine = (cutoffVal, labelText, color) => {
     const sx = toScreenX(cutoffVal);
     if (sx >= padding.left && sx <= padding.left + width) {
@@ -186,14 +198,14 @@ function renderDistributionPlot(canvas, chi2Points, normalPoints, options = {}) 
       ctx.fillStyle = color;
       ctx.font = '600 10px system-ui, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(`${labelText} (${cutoffVal.toFixed(1)})`, sx, padding.top + height + 32);
+      ctx.fillText(`${labelText} (${cutoffVal.toFixed(1)})`, sx, padding.top + height + 34);
     }
   };
 
   drawCutoffLine(lowerCutoff, 'Lower Cutoff', '#f59e0b');
   drawCutoffLine(upperCutoff, 'Upper Cutoff', '#f43f5e');
 
-  // --- 6. Draw Sample Chi-Square Marker Dot ---
+  // --- 7. Draw Sample Chi-Square Marker Dot & Badge ---
   if (options.chiSquare != null && options.chiSquare >= xMin && options.chiSquare <= xMax) {
     const sampleSx = toScreenX(options.chiSquare);
     
@@ -211,11 +223,13 @@ function renderDistributionPlot(canvas, chi2Points, normalPoints, options = {}) 
 
     // Draw vertical marker line
     ctx.beginPath();
-    ctx.strokeStyle = '#e2e8f0';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.6)';
+    ctx.setLineDash([2, 2]);
+    ctx.lineWidth = 1.5;
     ctx.moveTo(sampleSx, padding.top);
     ctx.lineTo(sampleSx, padding.top + height);
     ctx.stroke();
+    ctx.setLineDash([]);
 
     // Glowing Dot
     ctx.beginPath();
@@ -229,11 +243,30 @@ function renderDistributionPlot(canvas, chi2Points, normalPoints, options = {}) 
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Sample Value Badge
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '700 11px system-ui, sans-serif';
+    // Sample Value Pill Badge (Cleanly styled with dark background & border to prevent collision)
+    const badgeText = `Sample χ² = ${options.chiSquare.toFixed(2)}`;
+    ctx.font = 'bold 11px monospace, system-ui, sans-serif';
+    const textWidth = ctx.measureText(badgeText).width;
+    const badgeW = textWidth + 16;
+    const badgeH = 22;
+    const badgeX = Math.max(padding.left + 4, Math.min(padding.left + width - badgeW - 4, sampleSx - badgeW / 2));
+    const badgeY = padding.top + 6;
+
+    ctx.fillStyle = '#0b1329';
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    if (ctx.roundRect) {
+      ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 5);
+    } else {
+      ctx.rect(badgeX, badgeY, badgeW, badgeH);
+    }
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#38bdf8';
     ctx.textAlign = 'center';
-    ctx.fillText(`Sample χ² = ${options.chiSquare.toFixed(2)}`, sampleSx, padding.top - 8);
+    ctx.fillText(badgeText, badgeX + badgeW / 2, badgeY + 15);
   }
 
   ctx.restore();

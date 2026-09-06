@@ -1,6 +1,6 @@
 /**
  * WASM PractRand PRNG Test Suite runner.
- * Evaluates streaming byte chunks against the PractRand tests.
+ * Evaluates streaming byte chunks against the 10 PractRand tests.
  */
 class PractRandRunner {
   constructor(wasmInstance) {
@@ -46,19 +46,23 @@ class PractRandRunner {
     const view = new DataView(this.memory.buffer);
 
     const testNames = [
-      { id: "PR01", name: "BCFN (Binary Cell Finite Number)", testType: "Linear / Folding" },
-      { id: "PR02", name: "Gap-16", testType: "Frequency / Distance" },
-      { id: "PR03", name: "FPFT (Fourier Transform)", testType: "Spectral" },
-      { id: "PR04", name: "BRank (Binary Matrix Rank)", testType: "Matrix" },
-      { id: "PR05", name: "DC6 (Distance to Cube)", testType: "Spatial" },
-      { id: "PR06", name: "Dist-1to4", testType: "Distribution" },
+      { id: "PR01", name: "Gap-16:B", testType: "[Low1/8]" },
+      { id: "PR02", name: "FPF-16:B", testType: "[Low1/8]" },
+      { id: "PR03", name: "BCFN(2+0,13/64)", testType: "[Low1/8]" },
+      { id: "PR04", name: "BCFN(2+1,13/64)", testType: "[Low1/8]" },
+      { id: "PR05", name: "DC6-9x1Bytes-1", testType: "[Low4/8]" },
+      { id: "PR06", name: "BRank(12)", testType: "[Low4/8]" },
+      { id: "PR07", name: "FPF-8:all64k", testType: "[Low8/8]" },
+      { id: "PR08", name: "Dist-64x2:g", testType: "[Low8/8]" },
+      { id: "PR09", name: "Gap-8:all64k", testType: "[Low8/8]" },
+      { id: "PR10", name: "AutoCor-64", testType: "[Low8/8]" },
     ];
 
     const statusMap = ["NOT IMPLEMENTED", "PASS", "FAIL", "INSUFFICIENT DATA"];
     const entries = [];
 
     let offset = evalPtr;
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 10; i++) {
       const stat = view.getFloat64(offset + 16, true);
       const pval = view.getFloat64(offset + 24, true);
       const passed = view.getUint8(offset + 32) !== 0;
@@ -86,7 +90,7 @@ class PractRandRunner {
 
     return {
       entries,
-      totalTests: totalTests || 6,
+      totalTests: totalTests || 10,
       implementedCount,
       passedCount,
       failedCount,

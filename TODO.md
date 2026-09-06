@@ -9,7 +9,7 @@ This document tracks the **implementation status, architectural design, and road
 | Category | Count | Status | Notes |
 |---|:---:|:---:|---|
 | **Supported Test Suites** | 8 Suites + Quick Suite | ✅ 100% Integrated | ENT, NIST SP 800-22, BSI AIS 31, Dieharder, NIST SP 800-90B, TestU01, PractRand, gjrand, Quick Screen |
-| **Total Test Batteries Tracked** | 82 Tests | 32 Fully Implemented / 50 Scaffolding | All 82 tests have zero-alloc `StreamTest` contracts, WASM C-ABI exports, and UI tables |
+| **Total Test Batteries Tracked** | 82 Tests | 27 Fully Implemented / 55 Scaffolding | All 82 tests have zero-alloc `StreamTest` contracts, WASM C-ABI exports, and UI tables |
 | **Test Stream Generators** | 11 Generators / 5 Formats | ✅ 100% Implemented | LFSR, De Bruijn, AES/SHA DRBG, ChaCha20, Box-Muller, Poisson, LCG, Xoshiro |
 | **Distribution Packages** | 12 Standalone Folders | ✅ 100% Bundled & Minified | `dist/quick`, `dist/ent`, `dist/nist`, `dist/ais31`, `dist/dieharder`, `dist/sp80090b`, `dist/testu01`, `dist/practrand`, `dist/gjrand`, `dist/generators`, `dist/full`, `dist/math` |
 | **Memory Model** | `#![no_std]` Zero Heap Alloc | ✅ Enforced | All suites operate entirely on fixed stack state and static WASM buffers |
@@ -129,8 +129,10 @@ This document tracks the **implementation status, architectural design, and road
 
 ---
 
-### 🧪 TestU01 SmallCrush PRNG Benchmark (`randstat-suite-testu01`)
+### 🧪 TestU01 PRNG Benchmark (`randstat-suite-testu01`)
 *L'Ecuyer & Simard (2007) SmallCrush battery for rapid PRNG screening.*
+
+> **WASM vs. CLI Scope**: The WebAssembly build targets **SmallCrush** (10 tests) for zero-allocation in-browser screening. The `randstat-cli` targets implementing the full academic batteries: **Crush** (96 tests) and **BigCrush** (106 tests), as well as bitstream suites (**Rabbit**, **Alphabit**, **BlockAlphabit**).
 
 | ID | Test Name | Category | Status | Details |
 |:---:|---|---|:---:|---|
@@ -150,6 +152,8 @@ This document tracks the **implementation status, architectural design, and road
 ### ⚡ PractRand PRNG Battery (`randstat-suite-practrand`)
 *Chris Doty-Humphrey's PractRand high-throughput streaming benchmark.*
 
+> **WASM vs. CLI Scope**: The WebAssembly build evaluates the initial 10-test streaming octave. The `randstat-cli` targets full multi-gigabyte/terabyte folding stages (up to 32 TB continuous stream evaluation checkpoints).
+
 | ID | Test Name | Stage / Octave | Status | Details |
 |:---:|---|---|:---:|---|
 | **PR01** | **Gap-16:B** | `[Low1/8]` | ⏳ Scaffolding | 16-bit word gap recurrence test |
@@ -157,29 +161,31 @@ This document tracks the **implementation status, architectural design, and road
 | **PR03** | **BCFN(2+0,13/64)** | `[Low1/8]` | ⏳ Scaffolding | Block Count Frequency Non-uniformity |
 | **PR04** | **BCFN(2+1,13/64)** | `[Low1/8]` | ⏳ Scaffolding | Block Count Frequency Non-uniformity (Lagged) |
 | **PR05** | **DC6-9x1Bytes-1** | `[Low4/8]` | ⏳ Scaffolding | 6-bit / 9-byte distance correlation |
-| **PR06** | **BRank(12)** | `[Low4/8]` | ✅ Active | 12-bit binary matrix rank test |
+| **PR06** | **BRank(12)** | `[Low4/8]` | ⏳ Scaffolding | 12-bit binary matrix rank test |
 | **PR07** | **FPF-8:all64k** | `[Low8/8]` | ⏳ Scaffolding | 8-bit full 64K table frequency folding |
 | **PR08** | **Dist-64x2:g** | `[Low8/8]` | ⏳ Scaffolding | 64-bit distance 2D distribution |
 | **PR09** | **Gap-8:all64k** | `[Low8/8]` | ⏳ Scaffolding | 8-bit 64K gap recurrence distribution |
-| **PR10** | **AutoCor-64** | `[Low8/8]` | ✅ Active | 64-bit multi-lag autocorrelation battery |
+| **PR10** | **AutoCor-64** | `[Low8/8]` | ⏳ Scaffolding | 64-bit multi-lag autocorrelation battery |
 
 ---
 
 ### 🔬 gjrand PRNG Battery (`randstat-suite-gjrand`)
 *David Blackman's gjrand lightweight PRNG testing suite.*
 
+> **WASM vs. CLI Scope**: The WebAssembly build targets the standard **10-test bitstream battery**. The `randstat-cli` targets the full gjrand suite, including multi-stage data scaling (`--tiny` 10 MB to `--ten-tera` 10 TB), floating-point distribution tests (`pmcpf`), and normal distribution tests (`mcpn`).
+
 | ID | Test Name | Word Size | Status | Details |
 |:---:|---|---|:---:|---|
-| **GJ01** | **mcoll16** | 16-bit | ✅ Active | 16-bit word collision test |
-| **GJ02** | **mcoll32** | 32-bit | ✅ Active | 32-bit word collision test |
-| **GJ03** | **mprob16** | 16-bit | ✅ Active | 16-bit byte probabilities uniformity |
-| **GJ04** | **mprob32** | 32-bit | ✅ Active | 32-bit probabilities uniformity |
+| **GJ01** | **mcoll16** | 16-bit | ⏳ Scaffolding | 16-bit word collision test |
+| **GJ02** | **mcoll32** | 32-bit | ⏳ Scaffolding | 32-bit word collision test |
+| **GJ03** | **mprob16** | 16-bit | ⏳ Scaffolding | 16-bit byte probabilities uniformity |
+| **GJ04** | **mprob32** | 32-bit | ⏳ Scaffolding | 32-bit probabilities uniformity |
 | **GJ05** | **mdist16** | 16-bit | ⏳ Scaffolding | 16-bit inter-word distance distribution |
 | **GJ06** | **mdist32** | 32-bit | ⏳ Scaffolding | 32-bit inter-word distance distribution |
 | **GJ07** | **mgap16** | 16-bit | ⏳ Scaffolding | 16-bit gap distribution between matching words |
 | **GJ08** | **mgap32** | 32-bit | ⏳ Scaffolding | 32-bit gap distribution between matching words |
-| **GJ09** | **mrun16** | 16-bit | ✅ Active | 16-bit ascending/descending run distribution |
-| **GJ10** | **mrun32** | 32-bit | ✅ Active | 32-bit ascending/descending run distribution |
+| **GJ09** | **mrun16** | 16-bit | ⏳ Scaffolding | 16-bit ascending/descending run distribution |
+| **GJ10** | **mrun32** | 32-bit | ⏳ Scaffolding | 32-bit ascending/descending run distribution |
 
 ---
 
@@ -218,3 +224,7 @@ This document tracks the **implementation status, architectural design, and road
    - Generalize circular buffer autocorrelation across lags $\tau \in [1, 5000]$ for AIS 31 T5 and PractRand AutoCor-64.
 4. **NIST SP 800-90B Full t-Tuple and LRS Evaluators**:
    - Implement fixed-depth sliding window suffix array for Longest Repeated Substring and multi-tuple predictors.
+5. **CLI Exhaustive Battery Implementations (TestU01 Crush/BigCrush & gjrand Full Tiers)**:
+   - **TestU01 Full Port**: Implement full **Crush** (96 tests) and **BigCrush** (106 tests) execution pipelines in `randstat-cli` for comprehensive offline PRNG benchmarking, alongside bitstream suites (**Rabbit**, **Alphabit**, **BlockAlphabit**).
+   - **gjrand Full Data Tiers & Float Batteries**: Add CLI flags for tiered evaluations (`--tiny`, `--small`, `--standard`, `--big`, `--huge`, `--tera`, `--ten-tera`) and support floating-point (`pmcpf`) and normal distribution (`mcpn`) testing modes.
+   - **PractRand Extended Foldings**: Expand the CLI streaming accumulator to support multi-terabyte checkpoints up to 32 TB.

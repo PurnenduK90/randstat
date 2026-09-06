@@ -227,25 +227,35 @@ class FullSuiteRunner {
     const prPtr = baseEvalPtr + 3100;
     if (this.exports.practrand_finalize) this.exports.practrand_finalize(prPtr);
     const prDefs = [
-      { id: "PR01", name: "BCFN (Binary Cell Finite Number)", testType: "Linear / Folding" },
-      { id: "PR02", name: "Gap-16", testType: "Frequency / Distance" },
-      { id: "PR03", name: "FPFT (Fourier Transform)", testType: "Spectral" },
-      { id: "PR04", name: "BRank (Binary Matrix Rank)", testType: "Matrix" },
-      { id: "PR05", name: "DC6 (Distance to Cube)", testType: "Spatial" },
-      { id: "PR06", name: "Dist-1to4", testType: "Distribution" },
+      { id: "PR01", name: "Gap-16:B", testType: "[Low1/8]" },
+      { id: "PR02", name: "FPF-16:B", testType: "[Low1/8]" },
+      { id: "PR03", name: "BCFN(2+0,13/64)", testType: "[Low1/8]" },
+      { id: "PR04", name: "BCFN(2+1,13/64)", testType: "[Low1/8]" },
+      { id: "PR05", name: "DC6-9x1Bytes-1", testType: "[Low4/8]" },
+      { id: "PR06", name: "BRank(12)", testType: "[Low4/8]" },
+      { id: "PR07", name: "FPF-8:all64k", testType: "[Low8/8]" },
+      { id: "PR08", name: "Dist-64x2:g", testType: "[Low8/8]" },
+      { id: "PR09", name: "Gap-8:all64k", testType: "[Low8/8]" },
+      { id: "PR10", name: "AutoCor-64", testType: "[Low8/8]" },
     ];
-    const practrandEvaluation = parseEntries(prPtr, 6, prDefs);
+    const practrandEvaluation = parseEntries(prPtr, 10, prDefs);
 
     // 9. gjrand Results
-    const gjPtr = baseEvalPtr + 3400;
+    const gjPtr = baseEvalPtr + 3600;
     if (this.exports.gjrand_finalize) this.exports.gjrand_finalize(gjPtr);
     const gjDefs = [
-      { id: "GJ01", name: "Uniformity (Chi-Square)", profile: "Standard" },
-      { id: "GJ02", name: "Word Correlation", profile: "Standard" },
-      { id: "GJ03", name: "Run Structure", profile: "Standard" },
-      { id: "GJ04", name: "Poker Variations", profile: "Standard" },
+      { id: "GJ01", name: "mcoll16", profile: "16-bit" },
+      { id: "GJ02", name: "mcoll32", profile: "32-bit" },
+      { id: "GJ03", name: "mprob16", profile: "16-bit" },
+      { id: "GJ04", name: "mprob32", profile: "32-bit" },
+      { id: "GJ05", name: "mdist16", profile: "16-bit" },
+      { id: "GJ06", name: "mdist32", profile: "32-bit" },
+      { id: "GJ07", name: "mgap16", profile: "16-bit" },
+      { id: "GJ08", name: "mgap32", profile: "32-bit" },
+      { id: "GJ09", name: "mrun16", profile: "16-bit" },
+      { id: "GJ10", name: "mrun32", profile: "32-bit" },
     ];
-    const gjrandEvaluation = parseEntries(gjPtr, 4, gjDefs);
+    const gjrandEvaluation = parseEntries(gjPtr, 10, gjDefs);
 
     return {
       totalBytes: entResult.totalBytes,
