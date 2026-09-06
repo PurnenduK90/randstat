@@ -19,11 +19,34 @@ fn panic(_info: &core::panic::PanicInfo) -> ! {
     loop {}
 }
 
+pub mod generators;
 pub mod math;
 pub mod sha256;
 pub mod suites;
 
+static mut INPUT_BUFFER: [u8; 65536] = [0u8; 65536];
+static mut EVAL_BUFFER: [u8; 8192] = [0u8; 8192];
+
+/// Pointer to a safe 64 KB static input buffer in WASM memory.
+#[no_mangle]
+pub extern "C" fn get_input_buffer_ptr() -> *mut u8 {
+    unsafe { INPUT_BUFFER.as_mut_ptr() }
+}
+
+/// Capacity of the static input buffer (65536 bytes).
+#[no_mangle]
+pub extern "C" fn get_input_buffer_capacity() -> usize {
+    65536
+}
+
+/// Pointer to a safe 8 KB static evaluation buffer in WASM memory.
+#[no_mangle]
+pub extern "C" fn get_eval_buffer_ptr() -> *mut u8 {
+    unsafe { EVAL_BUFFER.as_mut_ptr() }
+}
+
 // Re-export C-ABI symbols
+pub use generators::*;
 pub use math::*;
 pub use sha256::*;
 
@@ -115,6 +138,29 @@ mod tests {
             let mut eval = core::mem::zeroed::<randstat_suite_full::FullEvaluation>();
             full::full_finalize(&mut eval);
             full::full_finalize(core::ptr::null_mut());
+        }
+
+        // Generator WASM exports
+        unsafe {
+            // Null safety
+            assert_eq!(generator_fill(core::ptr::null_mut(), 10), 0);
+            assert_eq!(generator_fill(core::ptr::null_mut(), 0), 0);
+
+            // Test each generator type init and fill
+            for gen_type in 0..=10 {
+                assert_eq!(generator_init(gen_type, 1, 1, 12345, 67890), 1);
+                let count = generator_fill_chunk(100);
+                assert_eq!(count, 100);
+                assert!(generator_format_chunk(10, 1) >= 20); // decimal (20-40 bytes)
+                assert_eq!(generator_format_chunk(10, 2), 10 * 8); // bits
+                assert_eq!(generator_format_chunk(10, 3), 10 * 2); // hex
+                generator_reset();
+            }
+
+            assert!(!generator_get_chunk_ptr().is_null());
+            assert!(!generator_get_formatted_ptr().is_null());
+            assert!(generator_get_chunk_capacity() > 0);
+            assert!(generator_get_formatted_capacity() > 0);
         }
     }
 }

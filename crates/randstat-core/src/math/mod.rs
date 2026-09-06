@@ -4,9 +4,11 @@
 
 pub mod chi2;
 pub mod plot;
+pub mod transform;
 
 // Convenience re-exports for WASM and CLI callers
 pub use chi2::{
     chi2_critical_value, chi2_pdf, compute_chi_square, lgamma, normal_pdf, pochisq, poz,
 };
 pub use plot::{generate_chi2_points, generate_normal_points};
+pub use transform::{box_muller, debruijn_step_bit, lfsr_step_bit, splitmix64, xoshiro256_next};

@@ -1,6 +1,6 @@
 # randstat workspace — convenience build recipes
 # Install: cargo install just
-# Usage:   just build-wasm-all
+# Usage:   just build-dist
 
 WASM_TARGET := "wasm32-unknown-unknown"
 WASM_OUT    := "target/" + WASM_TARGET + "/release"
@@ -77,6 +77,13 @@ build-wasm-dieharder:
         --target {{WASM_TARGET}} --release
     @echo "Output: {{WASM_OUT}}/randstat_wasm.wasm"
 
+# Build Generators WASM (~10-15 KB) — 11 generator families + formatters
+build-wasm-generators:
+    cargo build -p randstat-wasm \
+        --no-default-features --features generators \
+        --target {{WASM_TARGET}} --release
+    @echo "Output: {{WASM_OUT}}/randstat_wasm.wasm"
+
 # Build Full WASM (~35 KB) — all suites combined
 build-wasm-full:
     cargo build -p randstat-wasm \
@@ -85,7 +92,7 @@ build-wasm-full:
     @echo "Output: {{WASM_OUT}}/randstat_wasm.wasm"
 
 # Build ALL WASM variants in sequence
-build-wasm-all: build-wasm-math build-wasm-ent build-wasm-nist build-wasm-ais31 build-wasm-sp800-90b build-wasm-dieharder build-wasm-full
+build-wasm-all: build-wasm-math build-wasm-ent build-wasm-nist build-wasm-ais31 build-wasm-sp800-90b build-wasm-dieharder build-wasm-generators build-wasm-full
     @echo "All WASM variants built."
 
 # ── CLI ────────────────────────────────────────────────────────────────────────
@@ -94,11 +101,15 @@ build-wasm-all: build-wasm-math build-wasm-ent build-wasm-nist build-wasm-ais31 
 run *ARGS:
     cargo run -p randstat-cli -- {{ARGS}}
 
+# Run the CLI stream generator (pass generator args)
+generate *ARGS:
+    cargo run -p randstat-cli -- generate {{ARGS}}
+
 # Install CLI binary to ~/.cargo/bin/randstat
 install:
     cargo install --path apps/randstat-cli
 
-# ── CI ─────────────────────────────────────────────────────────────────────────
+# ── CI & Distribution ──────────────────────────────────────────────────────────
 
 # Check all source files are formatted
 fmt:
@@ -116,6 +127,6 @@ cov:
 ci: fmt clippy check check-wasm cov
     @echo "CI passed."
 
-# Concatenate and minify WASM and JS files into dist/
+# Package independent WASM binaries, minified JS SDKs, and READMEs into dist/
 build-dist:
     python scripts/build_dist.py

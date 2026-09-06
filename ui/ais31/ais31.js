@@ -26,17 +26,24 @@ class Ais31Runner {
 
   update(chunk) {
     if (!chunk || chunk.length === 0) return;
-    const len = chunk.length;
-    const bufferPtr = 1024;
-    const wasmView = new Uint8Array(this.memory.buffer, bufferPtr, len);
-    wasmView.set(chunk);
-    this.exports.ais31_update(bufferPtr, len);
+    const bufPtr = this.exports.get_input_buffer_ptr ? this.exports.get_input_buffer_ptr() : 65536;
+    const capacity = this.exports.get_input_buffer_capacity ? this.exports.get_input_buffer_capacity() : 65536;
+
+    let offset = 0;
+    while (offset < chunk.length) {
+      const sliceLen = Math.min(chunk.length - offset, capacity);
+      const subChunk = chunk.subarray ? chunk.subarray(offset, offset + sliceLen) : chunk.slice(offset, offset + sliceLen);
+      const wasmView = new Uint8Array(this.memory.buffer, bufPtr, sliceLen);
+      wasmView.set(subChunk);
+      this.exports.ais31_update(bufPtr, sliceLen);
+      offset += sliceLen;
+    }
   }
 
   finalize() {
-    const evalPtr = 4096;
+    const evalPtr = this.exports.get_eval_buffer_ptr ? this.exports.get_eval_buffer_ptr() : 131072;
     this.exports.ais31_finalize(evalPtr);
-    const view = new DataView(this.memory.buffer, evalPtr);
+    const view = new DataView(this.memory.buffer);
 
     const testNames = [
       { id: "T0", name: "Test T0: Disjointness" },

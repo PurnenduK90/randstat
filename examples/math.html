@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math & Distribution Plot Tool — Randstat WebAssembly</title>
+  <link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+  <!-- ─── Sidebar Navigation ──────────────────────────────────────────────── -->
+  <aside id="sidebar">
+    <a href="index.html" class="brand">
+      <div class="brand-icon">R</div>
+      <div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span class="brand-title">randstat</span>
+          <span class="brand-badge">v0.1.0</span>
+        </div>
+        <div style="font-size: 0.7rem; color: #64748b;">Zero-Alloc WASM Core</div>
+      </div>
+    </a>
+
+    <div>
+      <div class="nav-section-label">Test Suites</div>
+      <ul class="nav-list">
+        <li>
+          <a href="index.html" class="nav-item">
+            <span class="icon">🌐</span>
+            <span>Full Meta-Suite</span>
+          </a>
+        </li>
+        <li>
+          <a href="ent.html" class="nav-item">
+            <span class="icon">📊</span>
+            <span>Fourmilab ENT</span>
+          </a>
+        </li>
+        <li>
+          <a href="nist.html" class="nav-item">
+            <span class="icon">🛡️</span>
+            <span>NIST SP 800-22</span>
+          </a>
+        </li>
+        <li>
+          <a href="ais31.html" class="nav-item">
+            <span class="icon">🇩🇪</span>
+            <span>BSI AIS 20 / AIS 31</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="nav-section-label">Generators & Math</div>
+      <ul class="nav-list">
+        <li>
+          <a href="generators.html" class="nav-item">
+            <span class="icon">⚡</span>
+            <span>Stream Generators</span>
+          </a>
+        </li>
+        <li>
+          <a href="math.html" class="nav-item active">
+            <span class="icon">📈</span>
+            <span>Math & Plot Tool</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="sidebar-footer">
+      <div>Pure Rust <code>#![no_std]</code> + WebAssembly</div>
+      <div>Package: <code>dist/math/</code></div>
+    </div>
+  </aside>
+
+  <!-- ─── Main Content Container ──────────────────────────────────────────── -->
+  <main id="main-content">
+    <header class="page-header">
+      <div>
+        <h1 class="page-title"><span>📈</span> Math & Distribution Plot Tool</h1>
+        <p class="page-desc">High-precision Chi-Square and Normal distribution PDF/CDF evaluator with interactive canvas curve plotting.</p>
+      </div>
+      <div class="page-badges">
+        <span class="page-badge">dist/math/randstat-math.wasm</span>
+        <span class="page-badge">~7 KB</span>
+      </div>
+    </header>
+
+    <div class="container">
+      <div class="card" style="margin-bottom: 20px;">
+        <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 1.1rem; color: #f8fafc;">Distribution Parameters</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
+          <div>
+            <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #94a3b8; margin-bottom: 4px;">Degrees of Freedom (df)</label>
+            <input type="number" id="math-df" value="255" min="1" max="1000" style="width: 100%; padding: 8px 10px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #f8fafc; font-size: 0.9rem;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #94a3b8; margin-bottom: 4px;">Sample χ² Value</label>
+            <input type="number" id="math-sample" value="256.0" step="0.1" style="width: 100%; padding: 8px 10px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #f8fafc; font-size: 0.9rem;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #94a3b8; margin-bottom: 4px;">Significance (α)</label>
+            <input type="number" id="math-alpha" value="0.05" step="0.01" min="0.001" max="0.5" style="width: 100%; padding: 8px 10px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #f8fafc; font-size: 0.9rem;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #94a3b8; margin-bottom: 4px;">Resolution (Steps)</label>
+            <input type="number" id="math-steps" value="300" min="50" max="1000" style="width: 100%; padding: 8px 10px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #f8fafc; font-size: 0.9rem;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Statistics & Verdict Card -->
+      <div class="card" style="margin-bottom: 20px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; text-align: center;">
+          <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #1e293b;">
+            <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; text-transform: uppercase;">Lower Cutoff (α/2)</div>
+            <div id="stat-lower" style="font-size: 1.3rem; font-weight: 700; color: #f59e0b; font-family: monospace; margin-top: 4px;">--</div>
+          </div>
+          <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #1e293b;">
+            <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; text-transform: uppercase;">Upper Cutoff (1 - α/2)</div>
+            <div id="stat-upper" style="font-size: 1.3rem; font-weight: 700; color: #f43f5e; font-family: monospace; margin-top: 4px;">--</div>
+          </div>
+          <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #1e293b;">
+            <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; text-transform: uppercase;">p-value (pochisq)</div>
+            <div id="stat-pval" style="font-size: 1.3rem; font-weight: 700; color: #38bdf8; font-family: monospace; margin-top: 4px;">--</div>
+          </div>
+          <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #1e293b;">
+            <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; text-transform: uppercase;">Verdict</div>
+            <div id="stat-verdict" style="font-size: 1.1rem; font-weight: 700; color: #10b981; margin-top: 6px;">--</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Canvas Plot -->
+      <div class="card">
+        <h3 style="margin-top: 0; margin-bottom: 12px; font-size: 1.1rem; color: #f8fafc;">Probability Density Function (PDF) & Decision Regions</h3>
+        <div style="width: 100%; height: 350px; position: relative;">
+          <canvas id="plot-canvas" style="width: 100%; height: 100%;"></canvas>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Import ONLY Math Bundle from dist/math/ -->
+  <script src="../dist/math/randstat-math.min.js"></script>
+  <script>
+    let wasmInstance = null;
+
+    async function init() {
+      const response = await fetch('../dist/math/randstat-math.wasm');
+      const bytes = await response.arrayBuffer();
+      const res = await WebAssembly.instantiate(bytes, {});
+      wasmInstance = res.instance;
+
+      const dfInput = document.getElementById('math-df');
+      const sampleInput = document.getElementById('math-sample');
+      const alphaInput = document.getElementById('math-alpha');
+      const stepsInput = document.getElementById('math-steps');
+      const canvas = document.getElementById('plot-canvas');
+
+      function updatePlot() {
+        const df = parseFloat(dfInput.value) || 255;
+        const sample = parseFloat(sampleInput.value) || 256.0;
+        const alpha = parseFloat(alphaInput.value) || 0.05;
+        const steps = parseInt(stepsInput.value, 10) || 300;
+
+        const pLo = alpha / 2.0;
+        const pHi = 1.0 - pLo;
+        const lowerCutoff = wasmInstance.exports.chi2_critical_value_export(pLo, df);
+        const upperCutoff = wasmInstance.exports.chi2_critical_value_export(pHi, df);
+        const pVal = wasmInstance.exports.chi2_pochisq(sample, Math.round(df));
+
+        document.getElementById('stat-lower').textContent = lowerCutoff.toFixed(2);
+        document.getElementById('stat-upper').textContent = upperCutoff.toFixed(2);
+        document.getElementById('stat-pval').textContent = pVal.toFixed(6);
+
+        const verdictEl = document.getElementById('stat-verdict');
+        if (sample < lowerCutoff) {
+          verdictEl.textContent = '⚠ TOO UNIFORM';
+          verdictEl.style.color = '#f59e0b';
+        } else if (sample > upperCutoff) {
+          verdictEl.textContent = '❌ NON-UNIFORM (FAIL)';
+          verdictEl.style.color = '#f43f5e';
+        } else {
+          verdictEl.textContent = '✓ LIKELY RANDOM (PASS)';
+          verdictEl.style.color = '#10b981';
+        }
+
+        const mean = df;
+        const std = Math.sqrt(2.0 * df);
+        const xMin = Math.max(0, mean - 3.8 * std);
+        const xMax = mean + 3.8 * std;
+
+        const chi2Points = getChi2Points(wasmInstance, df, xMin, xMax, steps);
+        const normalPoints = getNormalPoints(wasmInstance, df, xMin, xMax, steps);
+
+        renderDistributionPlot(canvas, chi2Points, normalPoints, {
+          lowerCutoff,
+          upperCutoff,
+          chiSquare: sample
+        });
+      }
+
+      dfInput.addEventListener('input', updatePlot);
+      sampleInput.addEventListener('input', updatePlot);
+      alphaInput.addEventListener('input', updatePlot);
+      stepsInput.addEventListener('input', updatePlot);
+      window.addEventListener('resize', updatePlot);
+
+      updatePlot();
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fourmilab ENT Suite — Randstat WebAssembly</title>
+  <link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+  <!-- ─── Sidebar Navigation ──────────────────────────────────────────────── -->
+  <aside id="sidebar">
+    <a href="index.html" class="brand">
+      <div class="brand-icon">R</div>
+      <div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span class="brand-title">randstat</span>
+          <span class="brand-badge">v0.1.0</span>
+        </div>
+        <div style="font-size: 0.7rem; color: #64748b;">Zero-Alloc WASM Core</div>
+      </div>
+    </a>
+
+    <div>
+      <div class="nav-section-label">Test Suites</div>
+      <ul class="nav-list">
+        <li>
+          <a href="index.html" class="nav-item">
+            <span class="icon">🌐</span>
+            <span>Full Meta-Suite</span>
+          </a>
+        </li>
+        <li>
+          <a href="ent.html" class="nav-item active">
+            <span class="icon">📊</span>
+            <span>Fourmilab ENT</span>
+          </a>
+        </li>
+        <li>
+          <a href="nist.html" class="nav-item">
+            <span class="icon">🛡️</span>
+            <span>NIST SP 800-22</span>
+          </a>
+        </li>
+        <li>
+          <a href="ais31.html" class="nav-item">
+            <span class="icon">🇩🇪</span>
+            <span>BSI AIS 20 / AIS 31</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="nav-section-label">Generators & Math</div>
+      <ul class="nav-list">
+        <li>
+          <a href="generators.html" class="nav-item">
+            <span class="icon">⚡</span>
+            <span>Stream Generators</span>
+          </a>
+        </li>
+        <li>
+          <a href="math.html" class="nav-item">
+            <span class="icon">📈</span>
+            <span>Math & Plot Tool</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="sidebar-footer">
+      <div>Pure Rust <code>#![no_std]</code> + WebAssembly</div>
+      <div>Package: <code>dist/ent/</code></div>
+    </div>
+  </aside>
+
+  <!-- ─── Main Content Container ──────────────────────────────────────────── -->
+  <main id="main-content">
+    <header class="page-header">
+      <div>
+        <h1 class="page-title"><span>📊</span> Fourmilab ENT Suite</h1>
+        <p class="page-desc">Classical randomness battery: Shannon Entropy, Chi-Square, Mean, Monte Carlo Pi, and Serial Correlation.</p>
+      </div>
+      <div class="page-badges">
+        <span class="page-badge">dist/ent/randstat-ent.wasm</span>
+        <span class="page-badge">25.7 KB</span>
+      </div>
+    </header>
+
+    <div class="container">
+      <!-- Original Embeddable Entropy Analyzer Container -->
+      <div id="entropyContainer"></div>
+    </div>
+  </main>
+
+  <!-- Import ONLY ENT Bundle from dist/ent/ -->
+  <script src="../dist/ent/randstat-ent.min.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      new EntropyAnalyzer('#entropyContainer', {
+        wasmUrl: '../dist/ent/randstat-ent.wasm'
+      });
+    });
+  </script>
+</body>
+</html>

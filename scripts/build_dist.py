@@ -322,7 +322,10 @@ Self-contained distribution for German BSI AIS 20 / AIS 31 TRNG criteria.
             os.path.join(root_dir, "ui", "nist", "nist_ui.js"),
             os.path.join(root_dir, "ui", "ais31", "ais31.js"),
             os.path.join(root_dir, "ui", "ais31", "ais31_ui.js"),
-            os.path.join(root_dir, "ui", "entropy_ui.js"),
+            os.path.join(root_dir, "ui", "generators", "generators.js"),
+            os.path.join(root_dir, "ui", "generators", "generators_ui.js"),
+            os.path.join(root_dir, "ui", "full", "full.js"),
+            os.path.join(root_dir, "ui", "full", "full_ui.js"),
         ],
         full_dir,
         "randstat-full",
@@ -369,7 +372,56 @@ Lightweight library for Chi-Square/Normal PDF, CDF, critical values, and curve g
 """)
 
     # ──────────────────────────────────────────────────────────────────────────
-    # 6. Root dist/README.md catalog
+    # 6. Generators Package (dist/generators/)
+    # ──────────────────────────────────────────────────────────────────────────
+    print("\n--- 6. Packaging Test Stream Generators (dist/generators/) ---")
+    gen_dir = os.path.join(dist_dir, "generators")
+    os.makedirs(gen_dir, exist_ok=True)
+    build_suite_wasm(root_dir, "generators")
+    shutil.copy2(wasm_target_file, os.path.join(gen_dir, "randstat-generators.wasm"))
+    size_kb = os.path.getsize(os.path.join(gen_dir, "randstat-generators.wasm")) / 1024.0
+    print(f"   [WASM] randstat-generators.wasm ({size_kb:.1f} KB)")
+
+    bundle_and_minify(
+        [
+            os.path.join(root_dir, "ui", "generators", "generators.js"),
+            os.path.join(root_dir, "ui", "generators", "generators_ui.js"),
+        ],
+        gen_dir,
+        "randstat-generators",
+        "Test Stream Generators & Formatters"
+    )
+
+    with open(os.path.join(gen_dir, "README.md"), "w", encoding="utf-8") as f:
+        f.write("""# Randstat — Test Stream Generators Package
+
+High-performance, zero-allocation test stream generators and export formatters in WebAssembly.
+
+## Capabilities
+- **11 Generator Families**: Sequence ramp, Constant (zeros/ones/K), LFSR (orders 3–128), De Bruijn cycles, LCG, Xoshiro256**, Gaussian (Box-Muller), Poisson (λ=127), NIST SP 800-90A AES CTR_DRBG, NIST SP 800-90A SHA-256 Hash_DRBG, ChaCha20 keystream.
+- **5 Output Formats**: Raw Binary (`.bin`), ASCII Decimal Integers (`.txt`), ASCII Bitstream (`.bits`), Hexadecimal (`.hex`), Normalized Floats (`.csv`).
+
+## Files
+- `randstat-generators.wasm`: Zero-allocation WASM binary (~10 KB).
+- `randstat-generators.min.js`: Minified runner and dashboard UI (~10 KB).
+- `randstat-generators.js`: Unminified bundle for debugging.
+
+## Usage
+```html
+<div id="generator-widget"></div>
+<script src="randstat-generators.min.js"></script>
+<script>
+  async function initGen() {
+    const runner = await GeneratorRunner.load('randstat-generators.wasm');
+    renderGeneratorUI(document.getElementById('generator-widget'), runner);
+  }
+  initGen();
+</script>
+```
+""")
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # 7. Root dist/README.md catalog
     # ──────────────────────────────────────────────────────────────────────────
     dist_readme = os.path.join(dist_dir, "README.md")
     readme_content = """# Randstat Modular Distribution Packages
@@ -378,11 +430,12 @@ Each directory inside `dist/` is an **independent, self-contained package** with
 
 ## Package Catalog
 
-| Package Directory | Primary Suite | WASM Binary | JS Bundle (Minified) | Key Capabilities |
+| Package Directory | Primary Suite / Tool | WASM Binary | JS Bundle (Minified) | Key Capabilities |
 |---|---|---|---|---|
 | [`dist/ent/`](./ent/) | **Fourmilab ENT** | `randstat-ent.wasm` (10 KB) | `randstat-ent.min.js` (12 KB) | Shannon entropy, $\\chi^2$, Mean, Monte Carlo $\\pi$, Serial Corr |
 | [`dist/nist/`](./nist/) | **NIST SP 800-22** | `randstat-nist.wasm` (18 KB) | `randstat-nist.min.js` (12 KB) | 15 NIST cryptographic battery tests (§2.1–§2.15) |
 | [`dist/ais31/`](./ais31/) | **BSI AIS 20 / AIS 31** | `randstat-ais31.wasm` (16 KB) | `randstat-ais31.min.js` (12 KB) | 9 German BSI physical TRNG criteria (T0–T8) |
+| [`dist/generators/`](./generators/) | **Stream Generators** | `randstat-generators.wasm` (10 KB) | `randstat-generators.min.js` (10 KB) | 11 generators (LFSR, AES/SHA DRBG, ChaCha, De Bruijn) & 5 formats |
 | [`dist/full/`](./full/) | **Full Meta-Suite** | `randstat-full.wasm` (36 KB) | `randstat-full.min.js` (45 KB) | Combined meta-suite SDK |
 | [`dist/math/`](./math/) | **Math & Plot** | `randstat-math.wasm` (7 KB) | `randstat-math.min.js` (8 KB) | Pure $\\chi^2$/Normal PDF, CDF & canvas curve plotting |
 
@@ -406,6 +459,11 @@ dist/
 │   ├── randstat-ais31.wasm
 │   ├── randstat-ais31.js
 │   ├── randstat-ais31.min.js
+│   └── README.md
+├── generators/
+│   ├── randstat-generators.wasm
+│   ├── randstat-generators.js
+│   ├── randstat-generators.min.js
 │   └── README.md
 ├── full/
 │   ├── randstat-full.wasm

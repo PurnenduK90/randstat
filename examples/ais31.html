@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Full Meta-Suite — Randstat WebAssembly</title>
+  <title>BSI AIS 20 / AIS 31 Suite — Randstat WebAssembly</title>
   <link rel="stylesheet" href="shared.css">
 </head>
 <body>
@@ -25,7 +25,7 @@
       <div class="nav-section-label">Test Suites</div>
       <ul class="nav-list">
         <li>
-          <a href="index.html" class="nav-item active">
+          <a href="index.html" class="nav-item">
             <span class="icon">🌐</span>
             <span>Full Meta-Suite</span>
           </a>
@@ -43,7 +43,7 @@
           </a>
         </li>
         <li>
-          <a href="ais31.html" class="nav-item">
+          <a href="ais31.html" class="nav-item active">
             <span class="icon">🇩🇪</span>
             <span>BSI AIS 20 / AIS 31</span>
           </a>
@@ -71,7 +71,7 @@
 
     <div class="sidebar-footer">
       <div>Pure Rust <code>#![no_std]</code> + WebAssembly</div>
-      <div>Package: <code>dist/full/</code></div>
+      <div>Package: <code>dist/ais31/</code></div>
     </div>
   </aside>
 
@@ -79,19 +79,19 @@
   <main id="main-content">
     <header class="page-header">
       <div>
-        <h1 class="page-title"><span>🌐</span> Full Meta-Suite Analyzer</h1>
-        <p class="page-desc">Comprehensive randomness battery aggregating Fourmilab ENT, NIST SP 800-22, and BSI AIS 31.</p>
+        <h1 class="page-title"><span>🇩🇪</span> BSI AIS 20 / AIS 31 Physical TRNG Suite</h1>
+        <p class="page-desc">German Federal Office for Information Security (BSI) evaluation criteria for physical True Random Number Generators (T0–T8).</p>
       </div>
       <div class="page-badges">
-        <span class="page-badge">dist/full/randstat-full.wasm</span>
-        <span class="page-badge">~51.7 KB</span>
+        <span class="page-badge">dist/ais31/randstat-ais31.wasm</span>
+        <span class="page-badge">~31.5 KB</span>
       </div>
     </header>
 
     <div class="container">
       <div id="dropzone" class="dropzone">
-        <div class="dropzone-icon">📁</div>
-        <div class="dropzone-title">Drop a binary or text file to analyze across all suites</div>
+        <div class="dropzone-icon">🇩🇪</div>
+        <div class="dropzone-title">Drop a file to evaluate with BSI AIS 20 / AIS 31</div>
         <div class="dropzone-desc">Streaming chunked evaluator — supports any file size (e.g. 10 MB, 100 MB, 1 GB)</div>
         <input type="file" id="file-input" style="display: none;">
       </div>
@@ -100,13 +100,13 @@
     </div>
   </main>
 
-  <!-- Import ONLY Full Bundle from dist/full/ -->
-  <script src="../dist/full/randstat-full.min.js"></script>
+  <!-- Import ONLY AIS 31 Bundle from dist/ais31/ -->
+  <script src="../dist/ais31/randstat-ais31.min.js"></script>
   <script>
     let runner = null;
 
     async function init() {
-      runner = await FullSuiteRunner.load('../dist/full/randstat-full.wasm');
+      runner = await Ais31Runner.load('../dist/ais31/randstat-ais31.wasm');
       const container = document.getElementById('dashboard-container');
       const dropzone = document.getElementById('dropzone');
       const dropTitle = dropzone.querySelector('.dropzone-title');
@@ -127,13 +127,13 @@
           runner.update(buf);
           offset += chunkSize;
           const pct = Math.min(100, Math.round((offset / total) * 100));
-          dropTitle.textContent = `Evaluating across all suites: ${file.name} (${pct}%)...`;
+          dropTitle.textContent = `Evaluating ${file.name} (${pct}%)...`;
         }
 
         const sizeStr = (total >= 1048576) ? (total / 1048576).toFixed(2) + ' MB' : Math.round(total / 1024) + ' KB';
         dropTitle.textContent = `✓ Evaluated ${file.name} (${sizeStr})`;
-        const fullData = runner.finalize(0.05);
-        renderFullDashboard(container, fullData);
+        const evaluation = runner.finalize();
+        renderAis31Dashboard(container, evaluation);
       }
 
       dropzone.addEventListener('click', () => fileInput.click());

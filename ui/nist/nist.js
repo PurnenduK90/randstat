@@ -26,17 +26,24 @@ class NistRunner {
 
   update(chunk) {
     if (!chunk || chunk.length === 0) return;
-    const len = chunk.length;
-    const bufferPtr = 1024;
-    const wasmView = new Uint8Array(this.memory.buffer, bufferPtr, len);
-    wasmView.set(chunk);
-    this.exports.nist_update(bufferPtr, len);
+    const bufPtr = this.exports.get_input_buffer_ptr ? this.exports.get_input_buffer_ptr() : 65536;
+    const capacity = this.exports.get_input_buffer_capacity ? this.exports.get_input_buffer_capacity() : 65536;
+
+    let offset = 0;
+    while (offset < chunk.length) {
+      const sliceLen = Math.min(chunk.length - offset, capacity);
+      const subChunk = chunk.subarray ? chunk.subarray(offset, offset + sliceLen) : chunk.slice(offset, offset + sliceLen);
+      const wasmView = new Uint8Array(this.memory.buffer, bufPtr, sliceLen);
+      wasmView.set(subChunk);
+      this.exports.nist_update(bufPtr, sliceLen);
+      offset += sliceLen;
+    }
   }
 
   finalize() {
-    const evalPtr = 4096;
+    const evalPtr = this.exports.get_eval_buffer_ptr ? this.exports.get_eval_buffer_ptr() : 131072;
     this.exports.nist_finalize(evalPtr);
-    const view = new DataView(this.memory.buffer, evalPtr);
+    const view = new DataView(this.memory.buffer);
 
     const testNames = [
       { name: "Frequency (Monobit)", section: "2.1" },
@@ -59,11 +66,8 @@ class NistRunner {
     const statusMap = ["NOT IMPLEMENTED", "PASS", "FAIL", "INSUFFICIENT DATA"];
     const entries = [];
     
-    // In wasm32: each NistTestEntry is 32 or 40 bytes.
-    // We can also extract results via pointer strides:
     let offset = evalPtr;
     for (let i = 0; i < 15; i++) {
-      // Find TestResult: 2 string fat pointers (16 bytes) then statistic (f64), p_value (f64), passed (bool), status (u8)
       const stat = view.getFloat64(offset + 16, true);
       const pval = view.getFloat64(offset + 24, true);
       const passed = view.getUint8(offset + 32) !== 0;

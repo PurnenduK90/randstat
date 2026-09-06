@@ -23,6 +23,8 @@ randstat-suite-full      = { workspace = true, optional = true }
 # math-only: chi2/normal PDF+CDF and plot generators (~3–5 KB WASM)
 default   = ["math-only"]
 math-only = []
+# generators: adds test stream generators & formatters (~10 KB WASM)
+generators = []
 # ent: adds ENT streaming engine (Shannon + Monte Carlo + Serial Corr) (~15–18 KB)
 ent       = ["dep:randstat-suite-ent"]
 # nist: adds all 15 NIST SP800-22 tests (~30 KB)

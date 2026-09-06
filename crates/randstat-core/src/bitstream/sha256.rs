@@ -170,6 +170,42 @@ impl Default for Sha256 {
     }
 }
 
+/// Computes the SHA-256 digest of a byte slice in a single call.
+#[inline]
+pub fn sha256_hash(data: &[u8]) -> [u8; 32] {
+    let mut hasher = Sha256::new();
+    hasher.update(data);
+    hasher.finalize()
+}
+
+/// Computes HMAC-SHA256 (RFC 2104) in `#![no_std]` mode.
+pub fn hmac_sha256(key: &[u8], msg: &[u8]) -> [u8; 32] {
+    let mut k_pad = [0u8; 64];
+    if key.len() > 64 {
+        let digest = sha256_hash(key);
+        k_pad[..32].copy_from_slice(&digest);
+    } else {
+        k_pad[..key.len()].copy_from_slice(key);
+    }
+
+    let mut o_key_pad = [0u8; 64];
+    let mut i_key_pad = [0u8; 64];
+    for i in 0..64 {
+        o_key_pad[i] = k_pad[i] ^ 0x5c;
+        i_key_pad[i] = k_pad[i] ^ 0x36;
+    }
+
+    let mut inner = Sha256::new();
+    inner.update(&i_key_pad);
+    inner.update(msg);
+    let inner_hash = inner.finalize();
+
+    let mut outer = Sha256::new();
+    outer.update(&o_key_pad);
+    outer.update(&inner_hash);
+    outer.finalize()
+}
+
 /// Formats a 32-byte digest into a 64-byte lowercase hex ASCII array.
 pub fn format_hex(bytes: &[u8; 32], out: &mut [u8; 64]) {
     const HEX: &[u8; 16] = b"0123456789abcdef";

@@ -16,6 +16,7 @@
 //!   -h, --help            Show this help message
 //! ```
 
+mod generate_cli;
 mod report;
 
 use randstat_core::bitstream::sha256::Sha256;
@@ -115,15 +116,25 @@ fn parse_args_from(args: Vec<String>) -> CliArgs {
 
 fn print_help() {
     println!("randstat — Streaming Randomness Evaluator (randstat workspace)");
-    println!("Usage: randstat [FILE] [--suite <ent|nist|ais31|full>] [--alpha <FLOAT>] [--ascii] [--md] [--json]");
+    println!("Usage:");
+    println!("  randstat [FILE] [OPTIONS]                      Run randomness evaluation suite");
+    println!("  randstat generate [OPTIONS] [-o OUTFILE]       Generate test stream vectors");
     println!();
-    println!("Options:");
-    println!("  -s, --suite <NAME>    Test suite to run: ent (default), nist, ais31, full, sp80090b, dieharder, testu01, practrand, gjrand");
+    println!("Evaluation Options:");
+    println!("  -s, --suite <NAME>    Test suite: ent (default), nist, ais31, full, sp80090b, dieharder, testu01, practrand, gjrand");
     println!("  -a, --alpha <FLOAT>   Significance level alpha (default: 0.05)");
     println!("  -t, --ascii, --text   ASCII mode (reads one integer or float per line)");
     println!("  -m, --md, --markdown  Output GitHub-Flavoured Markdown report");
     println!("  -j, --json            Output raw JSON metrics");
     println!("  -h, --help            Show this help message");
+    println!();
+    println!("Generator Options (`randstat generate`):");
+    println!("  -t, --type <TYPE>     Generator type: seq, fixed, lfsr, debruijn, lcg, xoshiro, gaussian, poisson, aes, sha, chacha");
+    println!("  -s, --size <SIZE>     Stream size (e.g. 1024, 64KB, 1MB, 10MB, 1GB, 10GB)");
+    println!("  -f, --format <FMT>    Format: bin (default), int, bits, hex, float");
+    println!("  -o, --output <FILE>   Output destination (default: stdout)");
+    println!("      --order <N>       LFSR/DeBruijn order (bits)");
+    println!("      --seed <N>        RNG seed integer");
 }
 
 fn main() {
@@ -134,6 +145,10 @@ fn main() {
 }
 
 pub fn run_cli_app(args: Vec<String>) -> Result<(), String> {
+    if args.len() > 1 && (args[1] == "generate" || args[1] == "gen") {
+        return generate_cli::run_generate_cli(&args[2..]);
+    }
+
     let cli_args = parse_args_from(args);
     let mut ent_suite = EntSuite::new();
     let mut nist_suite = NistSuite::new();
@@ -395,5 +410,22 @@ mod tests {
         let res = run_cli_app(args);
         assert!(res.is_ok());
         let _ = std::fs::remove_file(temp_filename);
+
+        // Test generate subcommand
+        let gen_temp = "temp_gen_lfsr.bin";
+        let args_gen = vec![
+            "randstat".to_string(),
+            "generate".to_string(),
+            "-t".to_string(),
+            "lfsr".to_string(),
+            "-s".to_string(),
+            "2048".to_string(),
+            "-o".to_string(),
+            gen_temp.to_string(),
+        ];
+        let res_gen = run_cli_app(args_gen);
+        assert!(res_gen.is_ok());
+        assert_eq!(std::fs::metadata(gen_temp).unwrap().len(), 2048);
+        let _ = std::fs::remove_file(gen_temp);
     }
 }
