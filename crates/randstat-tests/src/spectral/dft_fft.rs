@@ -1,9 +1,9 @@
-//! NIST SP800-22 §2.6 — Discrete Fourier Transform (DFT/FFT) spectral test (stub).
+//! NIST SP800-22 Ã‚Â§2.6 Ã¢â‚¬â€ Discrete Fourier Transform (DFT/FFT) spectral test (stub).
 //!
 //! Detects periodic features in the sequence that would indicate non-randomness
 //! using the discrete Fourier transform.
 //!
-//! **Status: Stub** — accumulates total bits; returns dummy p-value of 0.5.
+//! **Status: Stub** Ã¢â‚¬â€ accumulates total bits; returns dummy p-value of 0.5.
 
 use randstat_core::traits::{StreamTest, TestResult};
 
@@ -29,10 +29,6 @@ impl StreamTest for DftTest {
     }
 
     fn evaluate(&self) -> TestResult {
-        TestResult {
-            statistic: 0.0,
-            p_value: 0.5,
-            passed: true,
-        }
+        TestResult::NOT_IMPLEMENTED
     }
 }

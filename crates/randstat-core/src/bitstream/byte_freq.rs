@@ -1,6 +1,6 @@
 //! Byte-frequency histogram accumulator and Shannon entropy calculator.
 //!
-//! `ByteFreqTracker` counts how many times each byte value (0–255) appears
+//! `ByteFreqTracker` counts how many times each byte value (0â€“255) appears
 //! in the input stream and computes Shannon entropy in bits per byte.
 
 use libm::log;

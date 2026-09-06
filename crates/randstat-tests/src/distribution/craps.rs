@@ -2,12 +2,12 @@
 //!
 //! Simulates the dice game of Craps using pairs of random bytes as dice rolls.
 //! Records the number of wins, losses, and the distribution of throws needed
-//! to resolve each game. The expected win probability for craps is 244/495 ≈ 0.4929.
+//! to resolve each game. The expected win probability for craps is 244/495 Ã¢â€°Ë† 0.4929.
 //!
 //! Tests are run for the win/loss ratio (z-score) and for the throw-count
 //! distribution (chi-square against theoretical Markov chain probabilities).
 //!
-//! **Status: Stub** — accumulates total bytes; returns dummy p-value of 0.5.
+//! **Status: Stub** Ã¢â‚¬â€ accumulates total bytes; returns dummy p-value of 0.5.
 
 use randstat_core::traits::{StreamTest, TestResult};
 
@@ -35,10 +35,6 @@ impl StreamTest for CrapsTest {
         //       simulate craps rules to record win/loss and throw counts;
         //       compare win probability via z-score and throw-count distribution
         //       via chi-square. Two p-values: min determines overall pass.
-        TestResult {
-            statistic: 0.0,
-            p_value: 0.5,
-            passed: true,
-        }
+        TestResult::NOT_IMPLEMENTED
     }
 }

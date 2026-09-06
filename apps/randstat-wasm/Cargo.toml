@@ -9,11 +9,15 @@ crate-type = ["cdylib"]
 [dependencies]
 randstat-core = { workspace = true }
 # Suite crates are optional — pulled in only when the matching feature is enabled
-randstat-suite-ent      = { workspace = true, optional = true }
-randstat-suite-nist     = { workspace = true, optional = true }
-randstat-suite-quick    = { workspace = true, optional = true }
-randstat-suite-full     = { workspace = true, optional = true }
+randstat-suite-ent       = { workspace = true, optional = true }
+randstat-suite-nist      = { workspace = true, optional = true }
+randstat-suite-sp800-90b = { workspace = true, optional = true }
+randstat-suite-ais31     = { workspace = true, optional = true }
 randstat-suite-dieharder = { workspace = true, optional = true }
+randstat-suite-testu01   = { workspace = true, optional = true }
+randstat-suite-practrand = { workspace = true, optional = true }
+randstat-suite-gjrand    = { workspace = true, optional = true }
+randstat-suite-full      = { workspace = true, optional = true }
 
 [features]
 # math-only: chi2/normal PDF+CDF and plot generators (~3–5 KB WASM)
@@ -23,9 +27,17 @@ math-only = []
 ent       = ["dep:randstat-suite-ent"]
 # nist: adds all 15 NIST SP800-22 tests (~30 KB)
 nist      = ["dep:randstat-suite-nist"]
-# quick: adds 4-test fast screening suite (~12–15 KB)
-quick     = ["dep:randstat-suite-quick"]
-# full: adds ent + nist together (~35 KB)
-full      = ["dep:randstat-suite-full"]
-# dieharder: stub suite for future Dieharder battery
+# sp800-90b: adds NIST SP800-90B min-entropy test suite
+sp800-90b = ["dep:randstat-suite-sp800-90b"]
+# ais31: adds BSI AIS 20 / AIS 31 TRNG test suite
+ais31     = ["dep:randstat-suite-ais31"]
+# dieharder: adds Dieharder test suite
 dieharder = ["dep:randstat-suite-dieharder"]
+# testu01: adds TestU01 academic PRNG benchmark suite
+testu01   = ["dep:randstat-suite-testu01"]
+# practrand: adds PractRand streaming PRNG test suite
+practrand = ["dep:randstat-suite-practrand"]
+# gjrand: adds gjrand streaming PRNG test suite
+gjrand    = ["dep:randstat-suite-gjrand"]
+# full: adds all suites together
+full      = ["dep:randstat-suite-full"]

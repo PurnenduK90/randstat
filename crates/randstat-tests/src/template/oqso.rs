@@ -1,13 +1,13 @@
-//! Dieharder: OQSO — Overlapping Quadruples Sparse Occupancy Test (stub).
+//! Dieharder: OQSO Ã¢â‚¬â€ Overlapping Quadruples Sparse Occupancy Test (stub).
 //!
 //! A Marsaglia occupancy test. Generates 4-letter words from a 32-letter alphabet
 //! (5 bits per letter) using overlapping 20-bit windows over the bit stream.
-//! The number of missing words out of 32⁴ = 1_048_576 possible words should
+//! The number of missing words out of 32Ã¢ÂÂ´ = 1_048_576 possible words should
 //! follow a known distribution for a truly random source.
 //!
 //! More sensitive than DNA because overlapping windows detect short-range correlations.
 //!
-//! **Status: Stub** — accumulates total bytes; returns dummy p-value of 0.5.
+//! **Status: Stub** Ã¢â‚¬â€ accumulates total bytes; returns dummy p-value of 0.5.
 
 use randstat_core::traits::{StreamTest, TestResult};
 
@@ -34,10 +34,6 @@ impl StreamTest for OqsoTest {
         // TODO: decode bits as overlapping 5-bit letters; form overlapping 4-letter
         //       (20-bit) words; maintain a 2^20 bitset; count missing words;
         //       compare to expected Poisson distribution.
-        TestResult {
-            statistic: 0.0,
-            p_value: 0.5,
-            passed: true,
-        }
+        TestResult::NOT_IMPLEMENTED
     }
 }

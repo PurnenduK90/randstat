@@ -1,9 +1,9 @@
-//! NIST SP800-22 §2.13 — Cumulative Sums (CUSUM) test (stub).
+//! NIST SP800-22 Ã‚Â§2.13 Ã¢â‚¬â€ Cumulative Sums (CUSUM) test (stub).
 //!
 //! Tests whether the cumulative sum of partial sequences is too large or too small
 //! relative to what would be expected for a random sequence.
 //!
-//! **Status: Stub** — accumulates total bits; returns dummy p-value of 0.5.
+//! **Status: Stub** Ã¢â‚¬â€ accumulates total bits; returns dummy p-value of 0.5.
 
 use randstat_core::traits::{StreamTest, TestResult};
 
@@ -29,10 +29,6 @@ impl StreamTest for CusumTest {
     }
 
     fn evaluate(&self) -> TestResult {
-        TestResult {
-            statistic: 0.0,
-            p_value: 0.5,
-            passed: true,
-        }
+        TestResult::NOT_IMPLEMENTED
     }
 }

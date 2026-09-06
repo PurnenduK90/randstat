@@ -1,20 +1,20 @@
-//! NIST SP800-22 §2.14 — Random Excursions Test (stub).
+//! NIST SP800-22 Ã‚Â§2.14 Ã¢â‚¬â€ Random Excursions Test (stub).
 //!
 //! Determines whether the number of visits to a particular state (value `x`)
 //! within a random walk is consistent with the distribution expected for a
 //! truly random sequence.
 //!
-//! The random walk is constructed from the ±1 bit sequence (0→−1, 1→+1).
-//! States `x ∈ {−4, −3, −2, −1, +1, +2, +3, +4}` are tested.
+//! The random walk is constructed from the Ã‚Â±1 bit sequence (0Ã¢â€ â€™Ã¢Ë†â€™1, 1Ã¢â€ â€™+1).
+//! States `x Ã¢Ë†Ë† {Ã¢Ë†â€™4, Ã¢Ë†â€™3, Ã¢Ë†â€™2, Ã¢Ë†â€™1, +1, +2, +3, +4}` are tested.
 //! Each state produces a separate p-value; all must pass.
 //!
-//! **Status: Stub** — accumulates total bits; returns dummy p-value of 0.5.
+//! **Status: Stub** Ã¢â‚¬â€ accumulates total bits; returns dummy p-value of 0.5.
 
 use randstat_core::traits::{StreamTest, TestResult};
 
 /// Random Excursions Test accumulator (stub).
 ///
-/// Requires `n ≥ 1_000_000` bits for reliable results (NIST §2.14.6).
+/// Requires `n Ã¢â€°Â¥ 1_000_000` bits for reliable results (NIST Ã‚Â§2.14.6).
 #[derive(Debug, Clone, Copy, Default)]
 pub struct RandomExcursionsTest {
     pub total_bits: u64,
@@ -40,10 +40,6 @@ impl StreamTest for RandomExcursionsTest {
         //       (subsequences between returns to state 0); for each state x,
         //       count the number of cycles containing exactly k visits (k=1..5+);
         //       compute chi-square vs theoretical Markov-chain distribution.
-        TestResult {
-            statistic: 0.0,
-            p_value: 0.5,
-            passed: true,
-        }
+        TestResult::NOT_IMPLEMENTED
     }
 }

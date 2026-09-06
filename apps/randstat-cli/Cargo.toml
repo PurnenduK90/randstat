@@ -8,5 +8,13 @@ name = "randstat"
 path = "src/main.rs"
 
 [dependencies]
-randstat-core      = { workspace = true }
-randstat-suite-ent = { workspace = true }
+randstat-core            = { workspace = true }
+randstat-suite-ent       = { workspace = true }
+randstat-suite-nist      = { workspace = true }
+randstat-suite-sp800-90b = { workspace = true }
+randstat-suite-ais31     = { workspace = true }
+randstat-suite-dieharder = { workspace = true }
+randstat-suite-testu01   = { workspace = true }
+randstat-suite-practrand = { workspace = true }
+randstat-suite-gjrand    = { workspace = true }
+randstat-suite-full      = { workspace = true }

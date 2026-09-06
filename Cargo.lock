@@ -13,7 +13,15 @@ name = "randstat-cli"
 version = "0.1.0"
 dependencies = [
  "randstat-core",
+ "randstat-suite-ais31",
+ "randstat-suite-dieharder",
  "randstat-suite-ent",
+ "randstat-suite-full",
+ "randstat-suite-gjrand",
+ "randstat-suite-nist",
+ "randstat-suite-practrand",
+ "randstat-suite-sp800-90b",
+ "randstat-suite-testu01",
 ]
 
 [[package]]
@@ -21,6 +29,14 @@ name = "randstat-core"
 version = "0.1.0"
 dependencies = [
  "libm",
+]
+
+[[package]]
+name = "randstat-suite-ais31"
+version = "0.1.0"
+dependencies = [
+ "randstat-core",
+ "randstat-tests",
 ]
 
 [[package]]
@@ -44,8 +60,22 @@ name = "randstat-suite-full"
 version = "0.1.0"
 dependencies = [
  "randstat-core",
+ "randstat-suite-ais31",
+ "randstat-suite-dieharder",
  "randstat-suite-ent",
+ "randstat-suite-gjrand",
  "randstat-suite-nist",
+ "randstat-suite-practrand",
+ "randstat-suite-sp800-90b",
+ "randstat-suite-testu01",
+]
+
+[[package]]
+name = "randstat-suite-gjrand"
+version = "0.1.0"
+dependencies = [
+ "randstat-core",
+ "randstat-tests",
 ]
 
 [[package]]
@@ -57,7 +87,23 @@ dependencies = [
 ]
 
 [[package]]
-name = "randstat-suite-quick"
+name = "randstat-suite-practrand"
+version = "0.1.0"
+dependencies = [
+ "randstat-core",
+ "randstat-tests",
+]
+
+[[package]]
+name = "randstat-suite-sp800-90b"
+version = "0.1.0"
+dependencies = [
+ "randstat-core",
+ "randstat-tests",
+]
+
+[[package]]
+name = "randstat-suite-testu01"
 version = "0.1.0"
 dependencies = [
  "randstat-core",
@@ -77,9 +123,13 @@ name = "randstat-wasm"
 version = "0.1.0"
 dependencies = [
  "randstat-core",
+ "randstat-suite-ais31",
  "randstat-suite-dieharder",
  "randstat-suite-ent",
  "randstat-suite-full",
+ "randstat-suite-gjrand",
  "randstat-suite-nist",
- "randstat-suite-quick",
+ "randstat-suite-practrand",
+ "randstat-suite-sp800-90b",
+ "randstat-suite-testu01",
 ]

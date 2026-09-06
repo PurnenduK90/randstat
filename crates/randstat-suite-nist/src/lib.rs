@@ -1,7 +1,7 @@
 //! `randstat-suite-nist` — Zero-alloc NIST SP800-22 test suite (all 15 tests).
 //!
 //! All 15 NIST SP800-22 tests are included. Tests marked ✅ have real implementations;
-//! tests marked 🔧 are stubs that accumulate bytes and return dummy p-values.
+//! tests marked 🔧 are stubs that accumulate bytes and return `TestResult::NOT_IMPLEMENTED`.
 
 #![no_std]
 
@@ -33,12 +33,12 @@ use randstat_tests::matrix::binary_matrix_rank::BinaryMatrixRankTest;
 
 /// Zero-alloc NIST SP800-22 suite — all 15 tests.
 ///
-/// | Test | §   | Status |
+/// | Test | Section | Status |
 /// |---|---|---|
 /// | Frequency (Monobit) | 2.1 | ✅ Real |
-/// | Block Frequency     | 2.2 | 🔧 Stub |
-/// | Runs                | 2.3 | 🔧 Stub |
-/// | Longest Run         | 2.4 | 🔧 Stub |
+/// | Block Frequency     | 2.2 | ✅ Real |
+/// | Runs                | 2.3 | ✅ Real |
+/// | Longest Run         | 2.4 | ✅ Real |
 /// | Matrix Rank         | 2.5 | 🔧 Stub |
 /// | DFT/FFT Spectral    | 2.6 | 🔧 Stub |
 /// | Non-overlapping Template | 2.7 | 🔧 Stub |
@@ -154,6 +154,146 @@ impl NistSuite {
         self.chi_square.reset();
         self.arithmetic_mean.reset();
     }
+
+    /// Evaluates all 15 NIST SP800-22 tests and returns a structured [`NistEvaluation`].
+    pub fn evaluate(&self) -> NistEvaluation {
+        use randstat_core::traits::TestStatus;
+
+        let entries = [
+            NistTestEntry {
+                name: "Frequency (Monobit)",
+                section: "2.1",
+                result: self.monobit.evaluate(),
+            },
+            NistTestEntry {
+                name: "Block Frequency",
+                section: "2.2",
+                result: self.block_frequency.evaluate(),
+            },
+            NistTestEntry {
+                name: "Runs",
+                section: "2.3",
+                result: self.runs_test.evaluate(),
+            },
+            NistTestEntry {
+                name: "Longest Run of Ones",
+                section: "2.4",
+                result: self.longest_run.evaluate(),
+            },
+            NistTestEntry {
+                name: "Binary Matrix Rank",
+                section: "2.5",
+                result: self.matrix_rank.evaluate(),
+            },
+            NistTestEntry {
+                name: "DFT / Spectral",
+                section: "2.6",
+                result: self.dft.evaluate(),
+            },
+            NistTestEntry {
+                name: "Non-overlapping Template",
+                section: "2.7",
+                result: self.non_overlapping_template.evaluate(),
+            },
+            NistTestEntry {
+                name: "Overlapping Template",
+                section: "2.8",
+                result: self.overlapping_template.evaluate(),
+            },
+            NistTestEntry {
+                name: "Maurer's Universal",
+                section: "2.9",
+                result: self.maurers_universal.evaluate(),
+            },
+            NistTestEntry {
+                name: "Linear Complexity (Berlekamp-Massey)",
+                section: "2.10",
+                result: self.berlekamp_massey.evaluate(),
+            },
+            NistTestEntry {
+                name: "Serial Test",
+                section: "2.11",
+                result: self.serial_test.evaluate(),
+            },
+            NistTestEntry {
+                name: "Approximate Entropy",
+                section: "2.12",
+                result: self.approx_entropy.evaluate(),
+            },
+            NistTestEntry {
+                name: "Cumulative Sums (CUSUM)",
+                section: "2.13",
+                result: self.cusum.evaluate(),
+            },
+            NistTestEntry {
+                name: "Random Excursions",
+                section: "2.14",
+                result: self.random_excursions.evaluate(),
+            },
+            NistTestEntry {
+                name: "Random Excursions Variant",
+                section: "2.15",
+                result: self.random_excursions_variant.evaluate(),
+            },
+        ];
+
+        let mut implemented_count = 0;
+        let mut passed_count = 0;
+        let mut failed_count = 0;
+        let mut skipped_count = 0;
+
+        for entry in &entries {
+            match entry.result.status {
+                TestStatus::Passed => {
+                    implemented_count += 1;
+                    passed_count += 1;
+                }
+                TestStatus::Failed => {
+                    implemented_count += 1;
+                    failed_count += 1;
+                }
+                TestStatus::NotImplemented | TestStatus::InsufficientData => {
+                    skipped_count += 1;
+                }
+            }
+        }
+
+        NistEvaluation {
+            entries,
+            total_tests: entries.len(),
+            implemented_count,
+            passed_count,
+            failed_count,
+            skipped_count,
+        }
+    }
+}
+
+/// Result entry for an individual NIST test.
+#[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct NistTestEntry {
+    pub name: &'static str,
+    pub section: &'static str,
+    pub result: randstat_core::traits::TestResult,
+}
+
+/// Aggregated evaluation result for the NIST SP800-22 test battery.
+#[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct NistEvaluation {
+    pub entries: [NistTestEntry; 15],
+    pub total_tests: usize,
+    pub implemented_count: usize,
+    pub passed_count: usize,
+    pub failed_count: usize,
+    pub skipped_count: usize,
+}
+
+impl Default for NistSuite {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 #[cfg(test)]
@@ -163,18 +303,16 @@ mod tests {
     #[test]
     fn test_nist_suite() {
         let mut suite = NistSuite::new();
-        suite.update(&[1, 2, 3, 4, 5]);
-        assert_eq!(suite.monobit.total_bits, 40);
+        suite.update(&[0xAA; 320]);
+        assert_eq!(suite.monobit.total_bits, 2560);
+
+        let eval = suite.evaluate();
+        assert_eq!(eval.total_tests, 15);
+        assert_eq!(eval.implemented_count, 4); // Monobit, Block Frequency, Runs, Longest Run
 
         let mut default_suite = NistSuite::default();
         default_suite.update(&[1, 2, 3]);
         default_suite.reset();
         assert_eq!(default_suite.monobit.total_bits, 0);
-    }
-}
-
-impl Default for NistSuite {
-    fn default() -> Self {
-        Self::new()
     }
 }

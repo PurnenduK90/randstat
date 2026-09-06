@@ -37,13 +37,13 @@ pub struct GuardrailEvaluation {
     pub mean_status: Status,
     pub pi_status: Status,
     pub serial_correlation_status: Status,
-    /// Lower critical value for chi-square at the given α.
+    /// Lower critical value for chi-square at the given Î±.
     pub chi_square_lower_bound: f64,
-    /// Upper critical value for chi-square at the given α.
+    /// Upper critical value for chi-square at the given Î±.
     pub chi_square_upper_bound: f64,
     /// Probability that a random distribution exceeds the observed chi-square (0..1).
     pub pochisq_exceed_prob: f64,
-    /// Absolute percentage error of the Monte Carlo π estimate.
+    /// Absolute percentage error of the Monte Carlo Ï€ estimate.
     pub pi_error_percent: f64,
 }
 

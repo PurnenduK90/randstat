@@ -4,11 +4,11 @@
 //! in the sequence (treating the byte stream as a sequence of integers). The
 //! distribution of run lengths should follow a known distribution for random data.
 //!
-//! Note: this is **different** from the NIST Runs Test (§2.3), which counts runs
+//! Note: this is **different** from the NIST Runs Test (Ã‚Â§2.3), which counts runs
 //! of bits above or below the median. This test looks at monotone subsequences
 //! in the numeric sequence of byte values.
 //!
-//! **Status: Stub** — accumulates total bytes; returns dummy p-value of 0.5.
+//! **Status: Stub** Ã¢â‚¬â€ accumulates total bytes; returns dummy p-value of 0.5.
 
 use randstat_core::traits::{StreamTest, TestResult};
 
@@ -47,10 +47,6 @@ impl StreamTest for RunsUpDownTest {
         // TODO: track sign changes (+/-) in the byte-to-byte differences;
         //       measure run lengths; compare run-length frequency distribution
         //       to theoretical values using chi-square.
-        TestResult {
-            statistic: 0.0,
-            p_value: 0.5,
-            passed: true,
-        }
+        TestResult::NOT_IMPLEMENTED
     }
 }

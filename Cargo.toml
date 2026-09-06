@@ -7,9 +7,13 @@ members = [
     # Suite crates (each is an independent no_std crate)
     "crates/randstat-suite-ent",
     "crates/randstat-suite-nist",
-    "crates/randstat-suite-quick",
-    "crates/randstat-suite-full",
+    "crates/randstat-suite-sp800-90b",
+    "crates/randstat-suite-ais31",
     "crates/randstat-suite-dieharder",
+    "crates/randstat-suite-testu01",
+    "crates/randstat-suite-practrand",
+    "crates/randstat-suite-gjrand",
+    "crates/randstat-suite-full",
     # Applications
     "apps/randstat-cli",
     "apps/randstat-wasm",
@@ -25,11 +29,15 @@ license = "EUPL-1.2"
 randstat-core          = { path = "crates/randstat-core" }
 randstat-tests         = { path = "crates/randstat-tests" }
 # Suite crates
-randstat-suite-ent      = { path = "crates/randstat-suite-ent" }
-randstat-suite-nist     = { path = "crates/randstat-suite-nist" }
-randstat-suite-quick    = { path = "crates/randstat-suite-quick" }
-randstat-suite-full     = { path = "crates/randstat-suite-full" }
+randstat-suite-ent       = { path = "crates/randstat-suite-ent" }
+randstat-suite-nist      = { path = "crates/randstat-suite-nist" }
+randstat-suite-sp800-90b = { path = "crates/randstat-suite-sp800-90b" }
+randstat-suite-ais31     = { path = "crates/randstat-suite-ais31" }
 randstat-suite-dieharder = { path = "crates/randstat-suite-dieharder" }
+randstat-suite-testu01   = { path = "crates/randstat-suite-testu01" }
+randstat-suite-practrand = { path = "crates/randstat-suite-practrand" }
+randstat-suite-gjrand    = { path = "crates/randstat-suite-gjrand" }
+randstat-suite-full      = { path = "crates/randstat-suite-full" }
 # Third-party
 libm = "0.2"
 
@@ -58,11 +66,24 @@ opt-level = 3
 [profile.release.package.randstat-suite-nist]
 opt-level = 3
 
-[profile.release.package.randstat-suite-quick]
+[profile.release.package.randstat-suite-sp800-90b]
+opt-level = 3
+
+[profile.release.package.randstat-suite-ais31]
+opt-level = 3
+
+[profile.release.package.randstat-suite-dieharder]
+opt-level = 3
+
+[profile.release.package.randstat-suite-testu01]
+opt-level = 3
+
+[profile.release.package.randstat-suite-practrand]
+opt-level = 3
+
+[profile.release.package.randstat-suite-gjrand]
 opt-level = 3
 
 [profile.release.package.randstat-suite-full]
 opt-level = 3
 
-[profile.release.package.randstat-suite-dieharder]
-opt-level = 3

@@ -7,7 +7,7 @@ use randstat_core::algorithms::monte_carlo::monte_carlo_pi_result;
 use randstat_core::bitstream::mont_carlo::MonteCarloAccum;
 use randstat_core::traits::{StreamTest, TestResult};
 
-/// Monte Carlo π estimation streaming accumulator.
+/// Monte Carlo Ãâ‚¬ estimation streaming accumulator.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct MonteCarloPiTest {
     pub accum: MonteCarloAccum,

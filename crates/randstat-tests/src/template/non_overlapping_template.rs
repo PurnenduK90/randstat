@@ -1,10 +1,10 @@
-//! NIST SP800-22 §2.7 — Non-overlapping Template Matching Test (stub).
+//! NIST SP800-22 Ã‚Â§2.7 Ã¢â‚¬â€ Non-overlapping Template Matching Test (stub).
 //!
 //! Counts the number of occurrences of a pre-specified target bit string (template)
 //! in the sequence. The sequence is partitioned into non-overlapping blocks, and
 //! each block is scanned for the template independently.
 //!
-//! **Status: Stub** — accumulates total bits; returns dummy p-value of 0.5.
+//! **Status: Stub** Ã¢â‚¬â€ accumulates total bits; returns dummy p-value of 0.5.
 
 use randstat_core::traits::{StreamTest, TestResult};
 
@@ -33,11 +33,7 @@ impl StreamTest for NonOverlappingTemplateTest {
 
     fn evaluate(&self) -> TestResult {
         // TODO: scan each M-bit block for the template, compute chi-square vs
-        //       expected occurrences using the NIST SP800-22 §2.7.4 formula.
-        TestResult {
-            statistic: 0.0,
-            p_value: 0.5,
-            passed: true,
-        }
+        //       expected occurrences using the NIST SP800-22 Ã‚Â§2.7.4 formula.
+        TestResult::NOT_IMPLEMENTED
     }
 }

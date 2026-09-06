@@ -1,8 +1,8 @@
-//! `randstat-suite-ent` — Zero-alloc ENT test suite.
+//! `randstat-suite-ent` â€” Zero-alloc ENT test suite.
 //!
 //! Aggregates the three tests from the original Fourmilab ENT program:
 //! - Shannon entropy (bits per byte)
-//! - Monte Carlo π estimation
+//! - Monte Carlo Ï€ estimation
 //! - Serial correlation coefficient
 //!
 //! **SHA-256 is deliberately NOT included here.** It is a file identity
@@ -11,7 +11,7 @@
 //! set [`EntResult::sha256`] themselves after calling [`EntSuite::finalize`].
 //!
 //! Used by the default WASM ENT build and the CLI. Pulling this crate in does
-//! NOT bring in any NIST stubs — the linker sees only what this crate imports.
+//! NOT bring in any NIST stubs â€” the linker sees only what this crate imports.
 
 #![no_std]
 
@@ -23,24 +23,24 @@ use randstat_tests::frequency::shannon_entropy::ShannonEntropyTest;
 use randstat_tests::spatial::monte_carlo_pi::MonteCarloPiTest;
 use randstat_tests::spatial::serial_correlation::SerialCorrelationTest;
 
-/// Zero-alloc ENT test suite (Shannon entropy + Monte Carlo π + Serial correlation).
+/// Zero-alloc ENT test suite (Shannon entropy + Monte Carlo Ï€ + Serial correlation).
 ///
-/// SHA-256 is intentionally absent — it is computed independently by the
+/// SHA-256 is intentionally absent â€” it is computed independently by the
 /// caller and set on the returned [`EntResult`] after [`finalize`](EntSuite::finalize).
 ///
-/// All state lives on the stack / in a WASM `static mut` — no heap allocation.
+/// All state lives on the stack / in a WASM `static mut` â€” no heap allocation.
 /// Use [`EntSuite::ZERO`] as a `static mut` initialiser in WASM.
 #[derive(Debug, Clone, Copy)]
 pub struct EntSuite {
     pub shannon: ShannonEntropyTest,
     pub monte_carlo: MonteCarloPiTest,
     pub serial_correlation: SerialCorrelationTest,
-    /// Running byte sum — used to compute arithmetic mean for the report.
+    /// Running byte sum â€” used to compute arithmetic mean for the report.
     pub sum_x: f64,
 }
 
 impl EntSuite {
-    /// Const zero-initialised instance — safe for `static mut` in WASM.
+    /// Const zero-initialised instance â€” safe for `static mut` in WASM.
     pub const ZERO: Self = Self {
         shannon: ShannonEntropyTest::new(),
         monte_carlo: MonteCarloPiTest::new(),
@@ -55,7 +55,7 @@ impl EntSuite {
 
     /// Feeds a chunk of bytes into all statistical accumulators.
     ///
-    /// Note: SHA-256 is NOT updated here — call your own
+    /// Note: SHA-256 is NOT updated here â€” call your own
     /// `Sha256::update(chunk)` in parallel if you need file identity.
     #[inline(always)]
     pub fn update(&mut self, chunk: &[u8]) {
@@ -112,6 +112,12 @@ impl EntSuite {
     }
 }
 
+impl Default for EntSuite {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -133,11 +139,5 @@ mod tests {
 
         default_suite.reset();
         assert!(default_suite.finalize().is_none());
-    }
-}
-
-impl Default for EntSuite {
-    fn default() -> Self {
-        Self::new()
     }
 }

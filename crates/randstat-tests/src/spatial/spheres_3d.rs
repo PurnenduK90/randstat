@@ -5,7 +5,7 @@
 //! raised to the third power should follow an Exponential distribution.
 //! A KS test on the resulting CDF gives the p-value.
 //!
-//! **Status: Stub** — accumulates total bytes; returns dummy p-value of 0.5.
+//! **Status: Stub** Ã¢â‚¬â€ accumulates total bytes; returns dummy p-value of 0.5.
 
 use randstat_core::traits::{StreamTest, TestResult};
 
@@ -29,13 +29,9 @@ impl StreamTest for Spheres3DTest {
         self.total_bytes = 0;
     }
     fn evaluate(&self) -> TestResult {
-        // TODO: decode triples of f32 as (x, y, z) ∈ [0, 1000)³;
-        //       for each point compute minimum distance to all others (O(n²));
-        //       collect r³_min values; compare CDF to Exp(λ) via KS test.
-        TestResult {
-            statistic: 0.0,
-            p_value: 0.5,
-            passed: true,
-        }
+        // TODO: decode triples of f32 as (x, y, z) Ã¢Ë†Ë† [0, 1000)Ã‚Â³;
+        //       for each point compute minimum distance to all others (O(nÃ‚Â²));
+        //       collect rÃ‚Â³_min values; compare CDF to Exp(ÃŽÂ») via KS test.
+        TestResult::NOT_IMPLEMENTED
     }
 }

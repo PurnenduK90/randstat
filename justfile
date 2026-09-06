@@ -25,7 +25,12 @@ check-wasm:
     cargo check -p randstat-tests         --target {{WASM_TARGET}}
     cargo check -p randstat-suite-ent     --target {{WASM_TARGET}}
     cargo check -p randstat-suite-nist    --target {{WASM_TARGET}}
-    cargo check -p randstat-suite-quick   --target {{WASM_TARGET}}
+    cargo check -p randstat-suite-sp800-90b --target {{WASM_TARGET}}
+    cargo check -p randstat-suite-ais31   --target {{WASM_TARGET}}
+    cargo check -p randstat-suite-dieharder --target {{WASM_TARGET}}
+    cargo check -p randstat-suite-testu01 --target {{WASM_TARGET}}
+    cargo check -p randstat-suite-practrand --target {{WASM_TARGET}}
+    cargo check -p randstat-suite-gjrand  --target {{WASM_TARGET}}
     cargo check -p randstat-suite-full    --target {{WASM_TARGET}}
 
 # ── WASM builds ────────────────────────────────────────────────────────────────
@@ -44,13 +49,6 @@ build-wasm-ent:
         --target {{WASM_TARGET}} --release
     @echo "Output: {{WASM_OUT}}/randstat_wasm.wasm"
 
-# Build Quick WASM (~12-15 KB) — 4-test fast screening suite
-build-wasm-quick:
-    cargo build -p randstat-wasm \
-        --no-default-features --features quick \
-        --target {{WASM_TARGET}} --release
-    @echo "Output: {{WASM_OUT}}/randstat_wasm.wasm"
-
 # Build NIST WASM (~30 KB) — all 15 NIST SP800-22 tests
 build-wasm-nist:
     cargo build -p randstat-wasm \
@@ -58,7 +56,28 @@ build-wasm-nist:
         --target {{WASM_TARGET}} --release
     @echo "Output: {{WASM_OUT}}/randstat_wasm.wasm"
 
-# Build Full WASM (~35 KB) — ENT + NIST combined
+# Build AIS 31 WASM (~20 KB) — BSI AIS 20 / AIS 31 TRNG test battery
+build-wasm-ais31:
+    cargo build -p randstat-wasm \
+        --no-default-features --features ais31 \
+        --target {{WASM_TARGET}} --release
+    @echo "Output: {{WASM_OUT}}/randstat_wasm.wasm"
+
+# Build SP800-90B WASM (~20 KB) — NIST SP800-90B min-entropy battery
+build-wasm-sp800-90b:
+    cargo build -p randstat-wasm \
+        --no-default-features --features sp800-90b \
+        --target {{WASM_TARGET}} --release
+    @echo "Output: {{WASM_OUT}}/randstat_wasm.wasm"
+
+# Build Dieharder WASM (~25 KB) — Dieharder battery
+build-wasm-dieharder:
+    cargo build -p randstat-wasm \
+        --no-default-features --features dieharder \
+        --target {{WASM_TARGET}} --release
+    @echo "Output: {{WASM_OUT}}/randstat_wasm.wasm"
+
+# Build Full WASM (~35 KB) — all suites combined
 build-wasm-full:
     cargo build -p randstat-wasm \
         --no-default-features --features full \
@@ -66,7 +85,7 @@ build-wasm-full:
     @echo "Output: {{WASM_OUT}}/randstat_wasm.wasm"
 
 # Build ALL WASM variants in sequence
-build-wasm-all: build-wasm-math build-wasm-ent build-wasm-quick build-wasm-nist build-wasm-full
+build-wasm-all: build-wasm-math build-wasm-ent build-wasm-nist build-wasm-ais31 build-wasm-sp800-90b build-wasm-dieharder build-wasm-full
     @echo "All WASM variants built."
 
 # ── CLI ────────────────────────────────────────────────────────────────────────

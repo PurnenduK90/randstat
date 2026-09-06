@@ -1,4 +1,4 @@
-//! `EntResult` — the aggregate result struct for a full ENT-style evaluation.
+//! `EntResult` â€” the aggregate result struct for a full ENT-style evaluation.
 //!
 //! This is a flat `#[repr(C)]` struct that can be written directly into WASM
 //! linear memory via pointer from JavaScript without any serialisation overhead.
@@ -13,13 +13,13 @@ pub struct EntResult {
     pub total_bytes: u64,
     /// Shannon entropy in bits per byte (0.0 = constant, 8.0 = maximum randomness).
     pub entropy_bits_per_byte: f64,
-    /// Estimated compression reduction percentage (0.0%–100.0%).
+    /// Estimated compression reduction percentage (0.0%â€“100.0%).
     pub compression_percent: f64,
     /// Chi-square statistic across 256 byte bins.
     pub chi_square: f64,
     /// Arithmetic mean of all byte values (ideal random = 127.5).
     pub mean: f64,
-    /// Monte Carlo estimate of π.
+    /// Monte Carlo estimate of Ï€.
     pub monte_carlo_pi: f64,
     /// Pearson serial correlation coefficient (0.0 = uncorrelated, sentinel -100_000.0 = constant).
     pub serial_correlation: f64,
@@ -28,7 +28,7 @@ pub struct EntResult {
 }
 
 impl EntResult {
-    /// Returns the compression reduction as an integer percentage (0–100).
+    /// Returns the compression reduction as an integer percentage (0â€“100).
     #[inline]
     pub fn compression_reduction_int(&self) -> i16 {
         self.compression_percent as i16

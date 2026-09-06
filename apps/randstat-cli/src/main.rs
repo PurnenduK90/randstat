@@ -1,6 +1,6 @@
 //! `randstat` CLI — Streaming randomness evaluator.
 //!
-//! Reads binary or ASCII data from a file or stdin, runs the ENT test suite,
+//! Reads binary or ASCII data from a file or stdin, runs the chosen test suite,
 //! and outputs results as a terminal table, Markdown report, or JSON.
 //!
 //! # Usage
@@ -8,6 +8,7 @@
 //! randstat [FILE] [OPTIONS]
 //!
 //! Options:
+//!   -s, --suite <NAME>    Test suite: ent (default), nist, ais31, ...
 //!   -a, --alpha <FLOAT>   Significance level alpha (default: 0.05)
 //!   -t, --ascii, --text   ASCII mode (one integer/float value per line)
 //!   -m, --md, --markdown  GitHub-Flavoured Markdown report output
@@ -18,9 +19,24 @@
 mod report;
 
 use randstat_core::bitstream::sha256::Sha256;
+use randstat_suite_ais31::Ais31Suite;
 use randstat_suite_ent::EntSuite;
+use randstat_suite_nist::NistSuite;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Read};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SuiteKind {
+    Ent,
+    Nist,
+    Sp80090b,
+    Ais31,
+    Dieharder,
+    Testu01,
+    Practrand,
+    Gjrand,
+    Full,
+}
 
 struct CliArgs {
     file_path: Option<String>,
@@ -28,6 +44,7 @@ struct CliArgs {
     ascii_mode: bool,
     json_mode: bool,
     md_mode: bool,
+    suite: SuiteKind,
 }
 
 #[allow(dead_code)]
@@ -41,6 +58,7 @@ fn parse_args_from(args: Vec<String>) -> CliArgs {
     let mut ascii_mode = false;
     let mut json_mode = false;
     let mut md_mode = false;
+    let mut suite = SuiteKind::Ent;
 
     let mut i = 1;
     while i < args.len() {
@@ -50,6 +68,22 @@ fn parse_args_from(args: Vec<String>) -> CliArgs {
                     if let Ok(val) = args[i + 1].parse::<f64>() {
                         alpha = val;
                     }
+                    i += 1;
+                }
+            }
+            "-s" | "--suite" => {
+                if i + 1 < args.len() {
+                    suite = match args[i + 1].to_lowercase().as_str() {
+                        "nist" => SuiteKind::Nist,
+                        "sp80090b" | "sp800-90b" | "90b" => SuiteKind::Sp80090b,
+                        "ais31" | "ais-31" => SuiteKind::Ais31,
+                        "dieharder" | "diehard" => SuiteKind::Dieharder,
+                        "testu01" | "u01" => SuiteKind::Testu01,
+                        "practrand" => SuiteKind::Practrand,
+                        "gjrand" => SuiteKind::Gjrand,
+                        "full" => SuiteKind::Full,
+                        _ => SuiteKind::Ent,
+                    };
                     i += 1;
                 }
             }
@@ -75,14 +109,16 @@ fn parse_args_from(args: Vec<String>) -> CliArgs {
         ascii_mode,
         json_mode,
         md_mode,
+        suite,
     }
 }
 
 fn print_help() {
     println!("randstat — Streaming Randomness Evaluator (randstat workspace)");
-    println!("Usage: randstat [FILE] [--alpha <FLOAT>] [--ascii] [--md] [--json]");
+    println!("Usage: randstat [FILE] [--suite <ent|nist|ais31|full>] [--alpha <FLOAT>] [--ascii] [--md] [--json]");
     println!();
     println!("Options:");
+    println!("  -s, --suite <NAME>    Test suite to run: ent (default), nist, ais31, full, sp80090b, dieharder, testu01, practrand, gjrand");
     println!("  -a, --alpha <FLOAT>   Significance level alpha (default: 0.05)");
     println!("  -t, --ascii, --text   ASCII mode (reads one integer or float per line)");
     println!("  -m, --md, --markdown  Output GitHub-Flavoured Markdown report");
@@ -99,9 +135,11 @@ fn main() {
 
 pub fn run_cli_app(args: Vec<String>) -> Result<(), String> {
     let cli_args = parse_args_from(args);
-    let mut suite = EntSuite::new();
-    // SHA-256 is computed independently — it is file identity, not a statistical test.
+    let mut ent_suite = EntSuite::new();
+    let mut nist_suite = NistSuite::new();
+    let mut ais31_suite = Ais31Suite::new();
     let mut hasher = Sha256::new();
+    let mut total_bytes = 0u64;
 
     // --- Open input source ---
     let input_source: Box<dyn Read> = match &cli_args.file_path {
@@ -133,13 +171,19 @@ pub fn run_cli_app(args: Vec<String>) -> Result<(), String> {
             }
 
             if batch.len() >= 8192 {
-                suite.update(&batch);
+                total_bytes += batch.len() as u64;
+                ent_suite.update(&batch);
+                nist_suite.update(&batch);
+                ais31_suite.update(&batch);
                 hasher.update(&batch);
                 batch.clear();
             }
         }
         if !batch.is_empty() {
-            suite.update(&batch);
+            total_bytes += batch.len() as u64;
+            ent_suite.update(&batch);
+            nist_suite.update(&batch);
+            ais31_suite.update(&batch);
             hasher.update(&batch);
         }
     } else {
@@ -149,8 +193,12 @@ pub fn run_cli_app(args: Vec<String>) -> Result<(), String> {
             match reader.read(&mut buf) {
                 Ok(0) => break,
                 Ok(n) => {
-                    suite.update(&buf[..n]);
-                    hasher.update(&buf[..n]);
+                    let chunk = &buf[..n];
+                    total_bytes += n as u64;
+                    ent_suite.update(chunk);
+                    nist_suite.update(chunk);
+                    ais31_suite.update(chunk);
+                    hasher.update(chunk);
                 }
                 Err(e) => {
                     return Err(format!("Read error: {}", e));
@@ -159,17 +207,75 @@ pub fn run_cli_app(args: Vec<String>) -> Result<(), String> {
         }
     }
 
-    // --- Finalise and report ---
-    match suite.finalize() {
-        None => {
-            return Err("No data processed.".to_string());
-        }
-        Some(mut res) => {
-            // SHA-256 is file identity — computed independently of the test suite.
-            res.sha256 = hasher.finalize();
+    if total_bytes == 0 {
+        return Err("No data processed.".to_string());
+    }
 
-            let eval = suite.evaluate(cli_args.alpha).unwrap();
-            let file_label = cli_args.file_path.as_deref().unwrap_or("<stdin>");
+    let file_label = cli_args.file_path.as_deref().unwrap_or("<stdin>");
+    let sha256_digest = hasher.finalize();
+
+    match cli_args.suite {
+        SuiteKind::Nist => {
+            let eval = nist_suite.evaluate();
+            if cli_args.json_mode {
+                report::print_nist_json(
+                    &eval,
+                    file_label,
+                    total_bytes,
+                    &sha256_digest,
+                    cli_args.alpha,
+                );
+            } else if cli_args.md_mode {
+                report::print_nist_markdown(
+                    &eval,
+                    file_label,
+                    total_bytes,
+                    &sha256_digest,
+                    cli_args.alpha,
+                );
+            } else {
+                report::print_nist_terminal(
+                    &eval,
+                    file_label,
+                    total_bytes,
+                    &sha256_digest,
+                    cli_args.alpha,
+                );
+            }
+        }
+        SuiteKind::Ais31 => {
+            let eval = ais31_suite.evaluate();
+            if cli_args.json_mode {
+                report::print_ais31_json(
+                    &eval,
+                    file_label,
+                    total_bytes,
+                    &sha256_digest,
+                    cli_args.alpha,
+                );
+            } else if cli_args.md_mode {
+                report::print_ais31_markdown(
+                    &eval,
+                    file_label,
+                    total_bytes,
+                    &sha256_digest,
+                    cli_args.alpha,
+                );
+            } else {
+                report::print_ais31_terminal(
+                    &eval,
+                    file_label,
+                    total_bytes,
+                    &sha256_digest,
+                    cli_args.alpha,
+                );
+            }
+        }
+        _ => {
+            // Default: ENT Suite
+            let mut res = ent_suite.finalize().unwrap();
+            res.sha256 = sha256_digest;
+            let eval = ent_suite.evaluate(cli_args.alpha).unwrap();
 
             if cli_args.json_mode {
                 report::print_json(&res, &eval, file_label, cli_args.alpha);
@@ -186,6 +292,7 @@ pub fn run_cli_app(args: Vec<String>) -> Result<(), String> {
             }
         }
     }
+
     Ok(())
 }
 
@@ -203,6 +310,8 @@ mod tests {
         // Test parsing different options
         let args = vec![
             "randstat".to_string(),
+            "-s".to_string(),
+            "nist".to_string(),
             "-a".to_string(),
             "0.01".to_string(),
             "-t".to_string(),
@@ -211,11 +320,21 @@ mod tests {
             "test_file.bin".to_string(),
         ];
         let parsed = parse_args_from(args);
+        assert_eq!(parsed.suite, SuiteKind::Nist);
         assert_eq!(parsed.alpha, 0.01);
         assert!(parsed.ascii_mode);
         assert!(parsed.json_mode);
         assert!(parsed.md_mode);
         assert_eq!(parsed.file_path.unwrap(), "test_file.bin");
+
+        // Test parsing AIS 31 suite
+        let args_ais = vec![
+            "randstat".to_string(),
+            "-s".to_string(),
+            "ais31".to_string(),
+        ];
+        let parsed_ais = parse_args_from(args_ais);
+        assert_eq!(parsed_ais.suite, SuiteKind::Ais31);
 
         // Test fallback for invalid alpha parse
         let args = vec![
@@ -234,15 +353,35 @@ mod tests {
         let res = run_cli_app(args);
         assert!(res.is_err());
 
-        // Test with actual file (test_random.bin exists in the workspace root)
+        // Test with actual file (cryptorandom_1KB.bin exists in tests/testfiles/)
         let test_bin_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../../test_random.bin")
+            .join("../../tests/testfiles/cryptorandom_1KB.bin")
             .to_str()
             .unwrap()
             .to_string();
-        let args = vec!["randstat".to_string(), test_bin_path];
+        let args = vec!["randstat".to_string(), test_bin_path.clone()];
         let res = run_cli_app(args);
         assert!(res.is_ok());
+
+        // Test NIST suite mode
+        let args_nist = vec![
+            "randstat".to_string(),
+            "-s".to_string(),
+            "nist".to_string(),
+            test_bin_path.clone(),
+        ];
+        let res_nist = run_cli_app(args_nist);
+        assert!(res_nist.is_ok());
+
+        // Test AIS 31 suite mode
+        let args_ais = vec![
+            "randstat".to_string(),
+            "-s".to_string(),
+            "ais31".to_string(),
+            test_bin_path,
+        ];
+        let res_ais = run_cli_app(args_ais);
+        assert!(res_ais.is_ok());
 
         // Test ASCII mode
         let temp_filename = "temp_test_ascii.txt";

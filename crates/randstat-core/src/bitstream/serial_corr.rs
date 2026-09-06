@@ -6,13 +6,13 @@
 /// Accumulates terms for the Pearson serial correlation coefficient.
 #[derive(Debug, Clone, Copy)]
 pub struct SerialCorrAccum {
-    /// Σ xᵢ · xᵢ₊₁ (product of consecutive bytes).
+    /// Î£ xáµ¢ Â· xáµ¢â‚Šâ‚ (product of consecutive bytes).
     pub scct1: f64,
-    /// Σ xᵢ (sum of byte values).
+    /// Î£ xáµ¢ (sum of byte values).
     pub scct2: f64,
-    /// Σ xᵢ² (sum of squared byte values).
+    /// Î£ xáµ¢Â² (sum of squared byte values).
     pub scct3: f64,
-    /// First byte seen — used for the circular end-to-start wrap.
+    /// First byte seen â€” used for the circular end-to-start wrap.
     pub first_byte: Option<u8>,
     /// Last byte seen in the stream.
     pub last_byte: Option<u8>,

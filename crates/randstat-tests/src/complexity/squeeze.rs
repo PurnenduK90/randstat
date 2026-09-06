@@ -1,13 +1,13 @@
 //! Dieharder: Squeeze Test (stub).
 //!
-//! Marsaglia's Squeeze test. Starts with a large integer k = 2³¹ and divides
-//! it repeatedly by successive random uniform [0,1) values until k ≤ 1.
+//! Marsaglia's Squeeze test. Starts with a large integer k = 2Ã‚Â³Ã‚Â¹ and divides
+//! it repeatedly by successive random uniform [0,1) values until k Ã¢â€°Â¤ 1.
 //! The number of divisions required is recorded. This count should follow a
 //! known distribution (approximately Poisson-related) for a truly random source.
 //!
 //! A KS test across many such trials gives the final p-value.
 //!
-//! **Status: Stub** — accumulates total bytes; returns dummy p-value of 0.5.
+//! **Status: Stub** Ã¢â‚¬â€ accumulates total bytes; returns dummy p-value of 0.5.
 
 use randstat_core::traits::{StreamTest, TestResult};
 
@@ -32,12 +32,8 @@ impl StreamTest for SqueezeTest {
     }
     fn evaluate(&self) -> TestResult {
         // TODO: decode bytes as f64 in [0, 1); for each trial, start with k=2^31
-        //       and count how many divisions (by successive random values) until k≤1;
+        //       and count how many divisions (by successive random values) until kÃ¢â€°Â¤1;
         //       collect 100_000 trial counts; apply KS test vs theoretical distribution.
-        TestResult {
-            statistic: 0.0,
-            p_value: 0.5,
-            passed: true,
-        }
+        TestResult::NOT_IMPLEMENTED
     }
 }

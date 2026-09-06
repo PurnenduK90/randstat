@@ -1,13 +1,13 @@
-//! `randstat-core` — `#![no_std]` pure math, bitstream accumulators, and statistics primitives.
+//! `randstat-core` â€” `#![no_std]` pure math, bitstream accumulators, and statistics primitives.
 //!
 //! This crate is the foundation of the `randstat` workspace. It has zero heap allocations
 //! and is fully compatible with `wasm32-unknown-unknown` without a wasm-bindgen runtime.
 //!
 //! # Module Layout
-//! - [`traits`] — `StreamTest` trait and `#[repr(C)]` result structs
-//! - [`bitstream`] — Streaming byte-level accumulators (frequency, SHA-256, Monte Carlo, serial correlation)
-//! - [`math`] — Chi-square, Normal, lgamma, pochisq, and distribution plot generators
-//! - [`stats`] — `EntResult`, `GuardrailEvaluation`, `Status`, and `evaluate_guardrails`
+//! - [`traits`] â€” `StreamTest` trait and `#[repr(C)]` result structs
+//! - [`bitstream`] â€” Streaming byte-level accumulators (frequency, SHA-256, Monte Carlo, serial correlation)
+//! - [`math`] â€” Chi-square, Normal, lgamma, pochisq, and distribution plot generators
+//! - [`stats`] â€” `EntResult`, `GuardrailEvaluation`, `Status`, and `evaluate_guardrails`
 
 #![no_std]
 
@@ -37,46 +37,53 @@ mod tests {
 
     #[test]
     fn test_algorithms() {
+        use super::traits::TestStatus;
+
         // monobit
         let res = nist_monobit(0, 0);
-        assert!(res.passed);
-        assert_eq!(res.p_value, 1.0);
+        assert_eq!(res.status, TestStatus::InsufficientData);
         let res2 = nist_monobit(500, 1000);
         assert!(res2.passed);
+        assert_eq!(res2.status, TestStatus::Passed);
         let res3 = nist_monobit(0, 1000);
         assert!(!res3.passed);
+        assert_eq!(res3.status, TestStatus::Failed);
 
         // chi_square
         let counts = [0u64; 256];
         let res = chi_square_test(&counts, 0);
-        assert!(res.passed);
+        assert_eq!(res.status, TestStatus::InsufficientData);
         let counts2 = [4u64; 256]; // 1024 total, perfectly uniform -> fails two-tailed
         let res2 = chi_square_test(&counts2, 1024);
         assert!(!res2.passed);
+        assert_eq!(res2.status, TestStatus::Failed);
         let mut counts3 = [2u64; 256];
-        for i in 0..128 {
-            counts3[i] = 6;
-        }
+        counts3[..128].fill(6);
         let res3 = chi_square_test(&counts3, 1024);
         assert!(res3.passed);
+        assert_eq!(res3.status, TestStatus::Passed);
 
         // shannon
         let res = shannon_score(&counts, 0);
-        assert!(!res.passed);
+        assert_eq!(res.status, TestStatus::InsufficientData);
         let res2 = shannon_score(&counts2, 1024);
         assert!(res2.passed);
+        assert_eq!(res2.status, TestStatus::Passed);
 
         // monte_carlo
         let res = monte_carlo_pi_result(0, 0);
-        assert!(!res.passed);
+        assert_eq!(res.status, TestStatus::InsufficientData);
         let res2 = monte_carlo_pi_result(785, 1000);
         assert!(res2.passed);
+        assert_eq!(res2.status, TestStatus::Passed);
 
         // serial_corr
         let res = serial_corr_result(-99_999.0);
         assert!(!res.passed);
+        assert_eq!(res.status, TestStatus::Failed);
         let res2 = serial_corr_result(0.01);
         assert!(res2.passed);
+        assert_eq!(res2.status, TestStatus::Passed);
     }
 
     #[test]
@@ -124,7 +131,7 @@ mod tests {
         // chi2_critical_value
         assert!(chi2_critical_value(0.05, 255.0) > 0.0); // alpha < 0.5
         assert!(chi2_critical_value(0.95, 255.0) > 0.0); // alpha >= 0.5
-        // To cover inner <= 0.0
+                                                         // To cover inner <= 0.0
         assert_eq!(chi2_critical_value(0.9999999999, 0.01), 0.0);
 
         // compute_chi_square
@@ -239,7 +246,7 @@ mod tests {
             compression_percent: 0.5,
             chi_square: 250.0,
             mean: 127.4,
-            monte_carlo_pi: 3.1415,
+            monte_carlo_pi: core::f64::consts::PI,
             serial_correlation: 0.005,
             sha256: [0; 32],
         };

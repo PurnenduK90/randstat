@@ -1,4 +1,4 @@
-//! NIST SP800-22 §2.1 — Frequency (Monobit) Test.
+//! NIST SP800-22 Ã‚Â§2.1 Ã¢â‚¬â€ Frequency (Monobit) Test.
 //!
 //! `MonobitTest` is the streaming accumulator. The evaluation formula lives in
 //! [`randstat_core::algorithms::monobit::nist_monobit`].
@@ -6,7 +6,7 @@
 use randstat_core::algorithms::monobit::nist_monobit;
 use randstat_core::traits::{StreamTest, TestResult};
 
-/// NIST SP800-22 §2.1 Frequency (Monobit) streaming accumulator.
+/// NIST SP800-22 Ã‚Â§2.1 Frequency (Monobit) streaming accumulator.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct MonobitTest {
     pub ones: u64,

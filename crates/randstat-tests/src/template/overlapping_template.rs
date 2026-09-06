@@ -1,10 +1,10 @@
-//! NIST SP800-22 §2.8 — Overlapping Template Matching Test (stub).
+//! NIST SP800-22 Ã‚Â§2.8 Ã¢â‚¬â€ Overlapping Template Matching Test (stub).
 //!
 //! Similar to the non-overlapping template test, but the window slides by one
 //! bit at a time (overlapping). This is more sensitive to periodic patterns.
 //! Uses the template of `m` ones as the target template.
 //!
-//! **Status: Stub** — accumulates total bits; returns dummy p-value of 0.5.
+//! **Status: Stub** Ã¢â‚¬â€ accumulates total bits; returns dummy p-value of 0.5.
 
 use randstat_core::traits::{StreamTest, TestResult};
 
@@ -33,11 +33,7 @@ impl StreamTest for OverlappingTemplateTest {
 
     fn evaluate(&self) -> TestResult {
         // TODO: slide a 1-bit window counting overlapping template matches.
-        //       Compute p-value using the Psi distribution from §2.8.4.
-        TestResult {
-            statistic: 0.0,
-            p_value: 0.5,
-            passed: true,
-        }
+        //       Compute p-value using the Psi distribution from Ã‚Â§2.8.4.
+        TestResult::NOT_IMPLEMENTED
     }
 }

@@ -1,0 +1,10 @@
+[package]
+name = "randstat-suite-testu01"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Zero-alloc TestU01 academic PRNG benchmark suite (SmallCrush/Crush/BigCrush)"
+
+[dependencies]
+randstat-core = { workspace = true }
+randstat-tests = { workspace = true }

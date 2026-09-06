@@ -1,4 +1,4 @@
-//! `randstat-suite-dieharder` — Dieharder test suite.
+//! `randstat-suite-dieharder` â€” Dieharder test suite.
 //!
 //! Aggregates the 12 Dieharder-specific tests. All tests are currently stubs.
 //! Tests are imported from their **functional category** inside `randstat-tests`
@@ -9,18 +9,18 @@
 //!
 //! | Test | Functional Category | Status |
 //! |---|---|---|
-//! | Birthday Spacings | `spatial` | 🔧 Stub |
-//! | Parking Lot | `spatial` | 🔧 Stub |
-//! | Minimum Distance 2D | `spatial` | 🔧 Stub |
-//! | 3D Spheres | `spatial` | 🔧 Stub |
-//! | Runs Up/Down | `runs` | 🔧 Stub |
-//! | OPERM5 | `runs` | 🔧 Stub |
-//! | OQSO | `template` | 🔧 Stub |
-//! | DNA | `template` | 🔧 Stub |
-//! | Count Ones in Stream | `frequency` | 🔧 Stub |
-//! | Squeeze | `complexity` | 🔧 Stub |
-//! | Overlapping Sums | `distribution` | 🔧 Stub |
-//! | Craps | `distribution` | 🔧 Stub |
+//! | Birthday Spacings | `spatial` | ðŸ”§ Stub |
+//! | Parking Lot | `spatial` | ðŸ”§ Stub |
+//! | Minimum Distance 2D | `spatial` | ðŸ”§ Stub |
+//! | 3D Spheres | `spatial` | ðŸ”§ Stub |
+//! | Runs Up/Down | `runs` | ðŸ”§ Stub |
+//! | OPERM5 | `runs` | ðŸ”§ Stub |
+//! | OQSO | `template` | ðŸ”§ Stub |
+//! | DNA | `template` | ðŸ”§ Stub |
+//! | Count Ones in Stream | `frequency` | ðŸ”§ Stub |
+//! | Squeeze | `complexity` | ðŸ”§ Stub |
+//! | Overlapping Sums | `distribution` | ðŸ”§ Stub |
+//! | Craps | `distribution` | ðŸ”§ Stub |
 
 #![no_std]
 
@@ -136,6 +136,129 @@ impl DieharderSuite {
         self.overlapping_sums.reset();
         self.craps.reset();
     }
+
+    /// Evaluates all 12 Dieharder tests and returns a structured [`DieharderEvaluation`].
+    pub fn evaluate(&self) -> DieharderEvaluation {
+        use randstat_core::traits::TestStatus;
+
+        let entries = [
+            DieharderTestEntry {
+                name: "Birthday Spacings",
+                category: "spatial",
+                result: self.birthday_spacings.evaluate(),
+            },
+            DieharderTestEntry {
+                name: "Parking Lot",
+                category: "spatial",
+                result: self.parking_lot.evaluate(),
+            },
+            DieharderTestEntry {
+                name: "Minimum Distance 2D",
+                category: "spatial",
+                result: self.minimum_distance_2d.evaluate(),
+            },
+            DieharderTestEntry {
+                name: "3D Spheres",
+                category: "spatial",
+                result: self.spheres_3d.evaluate(),
+            },
+            DieharderTestEntry {
+                name: "Runs Up/Down",
+                category: "runs",
+                result: self.runs_up_down.evaluate(),
+            },
+            DieharderTestEntry {
+                name: "OPERM5",
+                category: "runs",
+                result: self.operm5.evaluate(),
+            },
+            DieharderTestEntry {
+                name: "OQSO",
+                category: "template",
+                result: self.oqso.evaluate(),
+            },
+            DieharderTestEntry {
+                name: "DNA",
+                category: "template",
+                result: self.dna.evaluate(),
+            },
+            DieharderTestEntry {
+                name: "Count Ones in Stream",
+                category: "frequency",
+                result: self.count_ones_stream.evaluate(),
+            },
+            DieharderTestEntry {
+                name: "Squeeze",
+                category: "complexity",
+                result: self.squeeze.evaluate(),
+            },
+            DieharderTestEntry {
+                name: "Overlapping Sums",
+                category: "distribution",
+                result: self.overlapping_sums.evaluate(),
+            },
+            DieharderTestEntry {
+                name: "Craps",
+                category: "distribution",
+                result: self.craps.evaluate(),
+            },
+        ];
+
+        let mut implemented_count = 0;
+        let mut passed_count = 0;
+        let mut failed_count = 0;
+        let mut skipped_count = 0;
+
+        for entry in &entries {
+            match entry.result.status {
+                TestStatus::Passed => {
+                    implemented_count += 1;
+                    passed_count += 1;
+                }
+                TestStatus::Failed => {
+                    implemented_count += 1;
+                    failed_count += 1;
+                }
+                TestStatus::NotImplemented | TestStatus::InsufficientData => {
+                    skipped_count += 1;
+                }
+            }
+        }
+
+        DieharderEvaluation {
+            entries,
+            total_tests: entries.len(),
+            implemented_count,
+            passed_count,
+            failed_count,
+            skipped_count,
+        }
+    }
+}
+
+/// Result entry for an individual Dieharder test.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DieharderTestEntry {
+    pub name: &'static str,
+    pub category: &'static str,
+    pub result: randstat_core::traits::TestResult,
+}
+
+/// Aggregated evaluation result for the Dieharder test battery.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DieharderEvaluation {
+    pub entries: [DieharderTestEntry; 12],
+    pub total_tests: usize,
+    pub implemented_count: usize,
+    pub passed_count: usize,
+    pub failed_count: usize,
+    pub skipped_count: usize,
+}
+
+impl Default for DieharderSuite {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 #[cfg(test)]
@@ -148,15 +271,13 @@ mod tests {
         suite.update(&[1, 2, 3, 4, 5]);
         assert_eq!(suite.count_ones_stream.total_bytes, 5);
 
+        let eval = suite.evaluate();
+        assert_eq!(eval.total_tests, 12);
+        assert_eq!(eval.skipped_count, 12);
+
         let mut default_suite = DieharderSuite::default();
         default_suite.update(&[1, 2, 3]);
         default_suite.reset();
         assert_eq!(default_suite.count_ones_stream.total_bytes, 0);
-    }
-}
-
-impl Default for DieharderSuite {
-    fn default() -> Self {
-        Self::new()
     }
 }

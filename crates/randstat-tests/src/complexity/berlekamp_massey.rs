@@ -1,9 +1,9 @@
-//! NIST SP800-22 §2.10 — Linear Complexity (Berlekamp-Massey) test (stub).
+//! NIST SP800-22 Ã‚Â§2.10 Ã¢â‚¬â€ Linear Complexity (Berlekamp-Massey) test (stub).
 //!
 //! Tests whether the linear complexity of the sequence (length of the shortest
 //! LFSR that generates it) is consistent with a random sequence.
 //!
-//! **Status: Stub** — accumulates total bits; returns dummy p-value of 0.5.
+//! **Status: Stub** Ã¢â‚¬â€ accumulates total bits; returns dummy p-value of 0.5.
 
 use randstat_core::traits::{StreamTest, TestResult};
 
@@ -29,10 +29,6 @@ impl StreamTest for BerlekampMasseyTest {
     }
 
     fn evaluate(&self) -> TestResult {
-        TestResult {
-            statistic: 0.0,
-            p_value: 0.5,
-            passed: true,
-        }
+        TestResult::NOT_IMPLEMENTED
     }
 }

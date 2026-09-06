@@ -1,0 +1,10 @@
+[package]
+name = "randstat-suite-practrand"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Zero-alloc PractRand streaming PRNG test suite"
+
+[dependencies]
+randstat-core = { workspace = true }
+randstat-tests = { workspace = true }

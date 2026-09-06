@@ -10,13 +10,17 @@
 
 ### Status Summary
 
-| Suite | Tests | Status | Description |
-|-------|-------|--------|-------------|
-| **randstat-suite-ent** | 5 tests | ✅ **Complete** | Fourmilab ENT battery — entropy, chi-square, Monte Carlo π, serial correlation |
-| **randstat-suite-quick** | 4 tests | ✅ **Complete** | Fast screening suite — monobit, entropy, chi-square, mean |
-| **randstat-suite-nist** | 15 tests | 🔧 **In Progress** | NIST SP800-22 battery — 4/15 real, rest stubs |
-| **randstat-suite-full** | 19 tests | ✅ **Complete** | Meta-suite combining ENT + NIST |
-| **randstat-suite-dieharder** | 15+ tests | 📋 **Planned** | Dieharder battery — all stubs |
+| Suite | Tests | Standard | Status | Description |
+|---|---|---|---|---|
+| **randstat-suite-ent** | 5 tests | Fourmilab ENT | ✅ **Complete** | Fast baseline — entropy, chi-square, arithmetic mean, Monte Carlo π, serial correlation |
+| **randstat-suite-nist** | 15 tests | NIST SP 800-22 Rev 1a | 🔧 **In Progress** | Cryptographic randomness battery (§2.1–§2.15) — monobit active, structured stubs |
+| **randstat-suite-sp800-90b** | 10 tests | NIST SP 800-90B | 📋 **Planned** | Min-entropy estimation on physical noise sources (TRNG/QRNG) |
+| **randstat-suite-ais31** | 9 tests | BSI AIS 20 / AIS 31 | 📋 **Planned** | German BSI physical TRNG evaluation battery (Tests T0–T8) |
+| **randstat-suite-dieharder** | 12 tests | DIEHARD / Dieharder | 📋 **Planned** | Classical PRNG verification battery (Birthday spacings, Craps, Squeeze, etc.) |
+| **randstat-suite-testu01** | 10+ tests | TestU01 | 📋 **Planned** | Academic benchmark batteries (SmallCrush / Crush / BigCrush) |
+| **randstat-suite-practrand** | 6 tests | PractRand | 📋 **Planned** | Dynamic multi-terabyte stream testing filters (BCFN, Gap-16, FPFT, etc.) |
+| **randstat-suite-gjrand** | 4 tests | gjrand | 📋 **Planned** | Lightweight generator benchmarking battery |
+| **randstat-suite-full** | Master | Unified meta-suite | 🔧 **In Progress** | Comprehensive aggregator combining all test batteries |
 
 > **All suites run in both native (CLI/embedded) and WebAssembly environments**
 
@@ -24,56 +28,33 @@
 
 - **`no_std` compatible** — runs on embedded systems, compiles to WASM
 - **Streaming API** — process unlimited data with constant memory
-- **Modular suites** — link only the tests you need (precise WASM binary control)
+- **Implement once, reuse everywhere** — shared tests defined once in `randstat-tests`, reused across suites
+- **Modular suites** — link only the batteries you need (precise WASM binary control)
 - **Zero heap allocation** — all tests are `Copy + const`-constructible
 - **Multi-format output** — terminal tables, Markdown reports, JSON (CI/CD)
-- **Statistical rigor** — implements ENT, NIST SP800-22, and Dieharder test batteries
-
-### Live Demo
-
-Try the Entropy test WebAssembly version online at **[cadiora.com](https://cadiora.com/tools/random/entropy/)** — test random data directly in your browser with no installation required, and no data leaves your PC.
+- **Explicit TestStatus** — real evaluated tests vs `NOT IMPLEMENTED` stubs clearly distinguished
 
 ---
 
 ## Quick Start
 
-### Prerequisites
-
-```bash
-# Rust toolchain (stable)
-rustup update stable
-
-# WASM target (for WebAssembly builds)
-rustup target add wasm32-unknown-unknown
-
-# just (optional task runner)
-cargo install just
-```
-
-### Installation
-
-```bash
-# Install CLI to ~/.cargo/bin/randstat
-cargo install --path apps/randstat-cli
-
-# Or with just
-just install
-```
-
 ### Basic Usage
 
 ```bash
-# Evaluate a binary file
+# Evaluate with standard ENT suite (default)
 randstat data.bin
 
-# Generate Markdown report
-randstat data.bin --md
+# Evaluate with NIST SP 800-22 battery
+randstat data.bin --suite nist
 
-# JSON output for scripts
-randstat data.bin --json
+# Generate Markdown report
+randstat data.bin --suite nist --md
+
+# JSON output for scripts / CI
+randstat data.bin --suite nist --json
 
 # Read from stdin
-cat /dev/urandom | head -c 1M | randstat
+cat /dev/urandom | head -c 1M | randstat --suite nist
 
 # ASCII mode (one number per line)
 randstat numbers.txt --ascii
@@ -95,34 +76,35 @@ randstat-core          #![no_std]   libm
       │   bitstream/      — streaming byte accumulators (SHA-256, MC, SCC, freq)
       │   math/           — chi2 PDF/CDF, critical values, plot generators
       │   stats/          — EntResult, GuardrailEvaluation #[repr(C)] structs
-      │   traits.rs       — StreamTest trait + TestResult
+      │   traits.rs       — StreamTest trait + TestResult + TestStatus
       │
       ↓
 randstat-tests         #![no_std]   thin StreamTest wrappers (one file per test)
       │
-      ├──────────────────┬──────────────────┬──────────────────┐
-      ↓                  ↓                  ↓                  ↓
-randstat-suite-ent  randstat-suite-nist  randstat-suite-quick  (randstat-suite-dieharder)
- Shannon+MC+SCC      15 NIST tests        4 fast tests          stub
-      │                  │
-      └────────┬──────────┘
-               ↓
-      randstat-suite-full  (meta-suite: ent + nist)
-               │
-      ┌────────┴────────┐
-      ↓                 ↓
-randstat-cli        randstat-wasm
-  (std)            (#![no_std], 6 feature flags)
+      ├──────────────────┬──────────────────┬──────────────────┬──────────────────┐
+      ↓                  ↓                  ↓                  ↓                  ↓
+randstat-suite-ent  randstat-suite-nist  randstat-suite-sp800-90b  randstat-suite-ais31  (dieharder, testu01, etc.)
+      │                  │                  │                  │                  │
+      └──────────────────┴──────────────────┴──────────────────┴──────────────────┘
+                                           ↓
+                                  randstat-suite-full  (meta-suite aggregating all)
+                                           │
+                                  ┌────────┴────────┐
+                                  ↓                 ↓
+                            randstat-cli        randstat-wasm
+                              (std)            (#![no_std], modular feature flags)
 ```
 
 ### Design Principles
 
 | Principle | Implementation |
 |---|---|
-| **One test = one file** | Every `StreamTest` struct lives in its own `.rs` file |
+| **One test = one file** | Every `StreamTest` struct lives in its own `.rs` file in `randstat-tests` |
+| **Implement once** | Common tests (Monobit, Runs, Rank, $\chi^2$) are reused across all suite crates |
 | **Algorithms in core** | Pure evaluation functions in `randstat_core::algorithms` — no state, just math |
-| **Tests as thin wrappers** | `evaluate()` calls a core algorithm; structs only hold accumulator counts |
 | **Suites as separate crates** | Each suite is independently linkable → precise WASM binary size control |
+| **Zero heap allocation** | All suites are `Copy + const`-constructible; `static mut` in WASM is safe |
+| **`no_std` boundary** | `core` + `libm` only; `std` exists only in `randstat-cli` |eparate crates** | Each suite is independently linkable → precise WASM binary size control |
 | **Zero heap allocation** | All suites are `Copy + const`-constructible; `static mut` in WASM is safe |
 | **`no_std` boundary** | `core` + `libm` only; `std` exists only in `randstat-cli` |
 
@@ -136,10 +118,10 @@ Comprehensive catalog of all implemented and planned tests, organized by functio
 
 | Test | Standard | Suites | Status |
 |------|----------|--------|--------|
-| Shannon Entropy | Fourmilab ENT | ENT, Quick, Full | ✅ Real |
-| Frequency (Monobit) | NIST SP800-22 §2.1 | NIST, Quick, Full | ✅ Real |
-| Chi-Square Uniformity | ENT / Pearson | ENT, NIST, Quick, Full | ✅ Real |
-| Arithmetic Mean | Fourmilab ENT | ENT, NIST, Quick, Full | ✅ Real |
+| Shannon Entropy | Fourmilab ENT | ENT, Full, AIS 31 | ✅ Real |
+| Frequency (Monobit) | NIST SP800-22 §2.1 | NIST, Full, AIS 31 | ✅ Real |
+| Chi-Square Uniformity | ENT / Pearson | ENT, NIST, Full, AIS 31, gjrand | ✅ Real |
+| Arithmetic Mean | Fourmilab ENT | ENT, NIST, Full | ✅ Real |
 | Block Frequency | NIST SP800-22 §2.2 | NIST, Full | 🔧 Stub |
 | Cumulative Sums (CUSUM) | NIST SP800-22 §2.13 | NIST, Full | 🔧 Stub |
 | Serial Test (m-bit patterns) | NIST SP800-22 §2.11 | NIST, Full | 🔧 Stub |

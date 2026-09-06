@@ -21,7 +21,7 @@ fn ex(x: f64) -> f64 {
     }
 }
 
-/// Computes ln(Γ(a)) for a > 0 via Stirling's series.
+/// Computes ln(Î“(a)) for a > 0 via Stirling's series.
 pub fn lgamma(a: f64) -> f64 {
     if a <= 0.0 {
         return 0.0;
@@ -56,7 +56,7 @@ pub fn chi2_pdf(x: f64, df: f64) -> f64 {
     }
 }
 
-/// Normal PDF approximation at `x` with mean = `df` and σ = √(2·df).
+/// Normal PDF approximation at `x` with mean = `df` and Ïƒ = âˆš(2Â·df).
 pub fn normal_pdf(x: f64, df: f64) -> f64 {
     if df <= 0.0 {
         return 0.0;
@@ -136,7 +136,7 @@ pub fn poz(z: f64) -> f64 {
     }
 }
 
-/// Upper-tail chi-square cumulative probability P(χ² > ax | df) (CACM Algorithm 299).
+/// Upper-tail chi-square cumulative probability P(Ï‡Â² > ax | df) (CACM Algorithm 299).
 ///
 /// Returns a value in [0, 1]. Values near 0 or 1 indicate non-randomness.
 pub fn pochisq(ax: f64, df: usize) -> f64 {
@@ -214,10 +214,10 @@ pub fn compute_chi_square(byte_counts: &[u64; 256], total_bytes: u64) -> f64 {
 
 /// Complementary error function `erfc(x)` used by the NIST monobit p-value.
 ///
-/// Approximation via Chebyshev (max error < 1.2 × 10⁻⁷ for x ≥ 0).
+/// Approximation via Chebyshev (max error < 1.2 Ã— 10â»â· for x â‰¥ 0).
 pub fn erfc(x: f64) -> f64 {
     // Use libm's erfcf approximation through the exp/sqrt path
-    // Standard series: erfc(x) ≈ 2*poz(-x*sqrt(2))
+    // Standard series: erfc(x) â‰ˆ 2*poz(-x*sqrt(2))
     // poz already returns CDF(z), so erfc(x) = 2*(1 - poz(x*sqrt(2)))
     // But we need to be careful about sign. erfc(x) = 1 - erf(x).
     // For x >= 0: erfc(x) = 2 * Q(x*sqrt(2)) = 2*(1-Phi(x*sqrt(2)))

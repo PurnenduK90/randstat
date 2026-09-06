@@ -1,4 +1,4 @@
-//! Statistics — `EntResult`, `GuardrailEvaluation`, and `Status`.
+//! Statistics â€” `EntResult`, `GuardrailEvaluation`, and `Status`.
 
 pub mod ent_result;
 pub mod validate;

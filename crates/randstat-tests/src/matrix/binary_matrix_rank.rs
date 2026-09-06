@@ -1,9 +1,9 @@
-//! NIST SP800-22 §2.5 — Binary Matrix Rank test (stub).
+//! NIST SP800-22 Ã‚Â§2.5 Ã¢â‚¬â€ Binary Matrix Rank test (stub).
 //!
 //! Checks for linear dependence among fixed-length substrings of the sequence
 //! by computing the rank of non-overlapping binary matrices.
 //!
-//! **Status: Stub** — accumulates total bits; returns dummy p-value of 0.5.
+//! **Status: Stub** Ã¢â‚¬â€ accumulates total bits; returns dummy p-value of 0.5.
 
 use randstat_core::traits::{StreamTest, TestResult};
 
@@ -29,10 +29,6 @@ impl StreamTest for BinaryMatrixRankTest {
     }
 
     fn evaluate(&self) -> TestResult {
-        TestResult {
-            statistic: 0.0,
-            p_value: 0.5,
-            passed: true,
-        }
+        TestResult::NOT_IMPLEMENTED
     }
 }

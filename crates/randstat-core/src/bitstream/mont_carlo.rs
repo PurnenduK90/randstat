@@ -1,11 +1,11 @@
 //! Monte Carlo Pi estimation accumulator.
 //!
 //! Samples 6-byte coordinate pairs `(x, y)` where each coordinate is a 24-bit
-//! integer. Counts how many pairs fall inside the unit circle to estimate π.
+//! integer. Counts how many pairs fall inside the unit circle to estimate Ï€.
 //!
 //! Algorithm matches the Fourmilab ENT reference implementation.
 
-/// Tracks 2D coordinate samples to estimate π via Monte Carlo integration.
+/// Tracks 2D coordinate samples to estimate Ï€ via Monte Carlo integration.
 #[derive(Debug, Clone, Copy)]
 pub struct MonteCarloAccum {
     /// Number of 6-byte coordinate pairs falling inside the unit circle.
@@ -41,7 +41,7 @@ impl MonteCarloAccum {
 
     /// Feeds bytes into the accumulator; processes complete 6-byte groups.
     pub fn update(&mut self, slice: &[u8]) {
-        // (256^3 - 1)^2 — the squared radius of the 24-bit unit circle
+        // (256^3 - 1)^2 â€” the squared radius of the 24-bit unit circle
         const INCIRC: f64 = 16_777_215.0 * 16_777_215.0;
 
         for &byte in slice {
@@ -63,7 +63,7 @@ impl MonteCarloAccum {
         }
     }
 
-    /// Returns the current Monte Carlo estimate of π.
+    /// Returns the current Monte Carlo estimate of Ï€.
     /// Returns `0.0` if no complete coordinate pairs have been processed.
     #[inline]
     pub fn pi(&self) -> f64 {

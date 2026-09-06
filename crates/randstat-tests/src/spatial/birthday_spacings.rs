@@ -3,12 +3,12 @@
 //! Marsaglia's "Birthday Spacings" test. Selects `m` random points (integers)
 //! uniformly from [0, n) and sorts them. The spacings between adjacent points
 //! are computed; the number of duplicate spacings should follow a Poisson
-//! distribution with λ = m³ / (4n).
+//! distribution with ÃŽÂ» = mÃ‚Â³ / (4n).
 //!
-//! Named after the birthday paradox — the expected number of collisions in
+//! Named after the birthday paradox Ã¢â‚¬â€ the expected number of collisions in
 //! spacings grows predictably for a uniform distribution.
 //!
-//! **Status: Stub** — accumulates total bytes; returns dummy p-value of 0.5.
+//! **Status: Stub** Ã¢â‚¬â€ accumulates total bytes; returns dummy p-value of 0.5.
 
 use randstat_core::traits::{StreamTest, TestResult};
 
@@ -33,12 +33,8 @@ impl StreamTest for BirthdaySpacingsTest {
     }
     fn evaluate(&self) -> TestResult {
         // TODO: read 4-byte integers as random points in [0, 2^24); sort them;
-        //       count duplicate spacings; compare count to Poisson(λ) using
+        //       count duplicate spacings; compare count to Poisson(ÃŽÂ») using
         //       chi-square or KS test across multiple samples.
-        TestResult {
-            statistic: 0.0,
-            p_value: 0.5,
-            passed: true,
-        }
+        TestResult::NOT_IMPLEMENTED
     }
 }

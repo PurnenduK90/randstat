@@ -1,60 +1,23 @@
-//! Report formatters for `randstat-cli`.
-//!
-//! All string formatting and output logic lives here, keeping `main.rs` clean.
-//! Three output modes are supported:
-//! - [`print_terminal`] — padded ASCII box (default)
-//! - [`print_markdown`] — GitHub-Flavoured Markdown table
-//! - [`print_json`] — pretty-printed JSON
+//! Report formatters for Fourmilab ENT Suite.
 
+use super::common::{fmt_chip, fmt_scc, format_bytes, sha256_hex};
 use randstat_core::stats::ent_result::EntResult;
 use randstat_core::stats::validate::GuardrailEvaluation;
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-/// Formats a byte count as a human-readable size string.
-pub fn format_bytes(bytes: u64) -> String {
-    if bytes >= 1 << 30 {
-        format!("{:.2} GB", bytes as f64 / (1 << 30) as f64)
-    } else if bytes >= 1 << 20 {
-        format!("{:.2} MB", bytes as f64 / (1 << 20) as f64)
-    } else if bytes >= 1 << 10 {
-        format!("{:.2} KB", bytes as f64 / (1 << 10) as f64)
-    } else {
-        format!("{} B", bytes)
+pub fn verdict_label(eval: &GuardrailEvaluation) -> &'static str {
+    use randstat_core::stats::validate::Status;
+    match eval.overall_status {
+        Status::Pass => "✓ LIKELY RANDOM",
+        Status::Warn => "⚠ ARTIFICIAL UNIFORMITY/STRUCTURED",
+        Status::Fail => {
+            if eval.chi_square_status == Status::Fail && eval.pochisq_exceed_prob > 0.9999 {
+                "⚠ ARTIFICIAL UNIFORMITY/STRUCTURED"
+            } else {
+                "⚠ LIKELY BIASED/ANOMALY"
+            }
+        }
     }
 }
-
-/// Formats a 32-byte SHA-256 digest as a 64-character lowercase hex `String`.
-pub fn sha256_hex(digest: &[u8; 32]) -> String {
-    let hex_bytes = {
-        let mut buf = [0u8; 64];
-        randstat_core::bitstream::sha256::format_hex(digest, &mut buf);
-        buf
-    };
-    String::from_utf8_lossy(&hex_bytes).into_owned()
-}
-
-/// Formats the chi-square exceedance probability as a percentage string.
-fn fmt_chip(prob: f64) -> String {
-    if prob < 0.0001 {
-        "< 0.01%".to_string()
-    } else if prob > 0.9999 {
-        "> 99.99%".to_string()
-    } else {
-        format!("{:.2}%", prob * 100.0)
-    }
-}
-
-/// Formats the serial correlation coefficient (handles the constant-stream sentinel).
-fn fmt_scc(scc: f64) -> String {
-    if scc < -90_000.0 {
-        "Undefined".to_string()
-    } else {
-        format!("{:.6}", scc)
-    }
-}
-
-// ─── Output Modes ─────────────────────────────────────────────────────────────
 
 /// Outputs a GitHub-Flavoured Markdown randomness report.
 pub fn print_markdown(res: &EntResult, eval: &GuardrailEvaluation, file: &str, alpha: f64) {
@@ -147,6 +110,7 @@ pub fn print_json(res: &EntResult, eval: &GuardrailEvaluation, file: &str, alpha
 
     let escaped_file = file.replace('\\', "/");
     println!("{{");
+    println!("  \"suite\": \"ENT\",");
     println!("  \"file\": \"{}\",", escaped_file);
     println!("  \"total_bytes\": {},", res.total_bytes);
     println!("  \"sha256\": \"{}\",", sha);
@@ -249,7 +213,7 @@ pub fn print_terminal(
         "| Chi-Square (df=255)    | {:<19} | {:<21} | {:<18} | {:<6} |",
         format!("{:.2}", res.chi_square),
         format!(
-            "[{:.2} - {:.2}]",
+            "[{:.1}, {:.1}]",
             eval.chi_square_lower_bound, eval.chi_square_upper_bound
         ),
         chip_dev,
@@ -257,122 +221,45 @@ pub fn print_terminal(
     );
 
     // Arithmetic Mean
+    let mean_dev = res.mean - 127.5;
+    let mean_dev_str = if mean_dev.abs() < 0.00005 {
+        "Diff: ~ 0.0000".to_string()
+    } else {
+        format!("Diff: {:+.4}", mean_dev)
+    };
     println!(
-        "| Arithmetic Mean        | {:<19} | ~ 127.500000          | {:<18} | {:<6} |",
+        "| Arithmetic Mean        | {:<19} | ~ 127.5000 (Mean)     | {:<18} | {:<6} |",
         format!("{:.4}", res.mean),
-        format!("Diff: {:+.4}", res.mean - 127.5),
+        mean_dev_str,
         eval.mean_status.as_str()
     );
 
     // Monte Carlo Pi
+    let pi_err_str = format!("Err:  {:.2}%", eval.pi_error_percent);
     println!(
-        "| Monte Carlo Pi         | {:<19} | ~ 3.141592654         | {:<18} | {:<6} |",
-        format!("{:.9}", res.monte_carlo_pi),
-        format!("Error: {:.2}%", eval.pi_error_percent),
+        "| Monte Carlo Pi (2D)    | {:<19} | ~ 3.141592654 (MC)    | {:<18} | {:<6} |",
+        format!("{:.6}", res.monte_carlo_pi),
+        pi_err_str,
         eval.pi_status.as_str()
     );
 
     // Serial Correlation
-    let scc_str = fmt_scc(res.serial_correlation);
-    let scc_dev = if res.serial_correlation < -90_000.0 || res.serial_correlation.abs() >= 0.05 {
-        "⚠ High Correlation"
+    let scc_dev_str = if res.serial_correlation < -90_000.0 {
+        "Constant sequence".to_string()
+    } else if res.serial_correlation.abs() >= 0.05 {
+        "High correlation".to_string()
     } else {
-        "Uncorrelated"
+        "Uncorrelated".to_string()
     };
     println!(
-        "| Serial Correlation     | {:<19} | [-0.010000, 0.010000] | {:<18} | {:<6} |",
-        scc_str,
-        scc_dev,
+        "| Serial Correlation     | {:<19} | 0.000000 (Lag-1)      | {:<18} | {:<6} |",
+        fmt_scc(res.serial_correlation),
+        scc_dev_str,
         eval.serial_correlation_status.as_str()
     );
 
     println!("+------------------------+---------------------+-----------------------+--------------------+--------+");
     println!();
-    println!("OVERALL VERDICT: [{}]", verdict);
-    println!("\nTEST INTERPRETATION & GUIDE:");
-    println!(" - Shannon Entropy    : Higher is more random. Ideal = 8.0 bits/byte.");
-    println!(
-        " - Chi-Square Test    : At α={:.4} (df=255), valid range [{:.2}, {:.2}].",
-        alpha, eval.chi_square_lower_bound, eval.chi_square_upper_bound
-    );
-    println!(" - Arithmetic Mean    : Random byte streams average ~127.5000.");
-    println!(" - Monte Carlo Pi     : Error < 3.0% indicates randomness.");
-    println!(" - Serial Correlation : Values near 0.0 indicate no correlation.");
+    println!("OVERALL VERDICT : {}", verdict);
     println!("==========================================================================================");
-}
-
-// ─── Internal ────────────────────────────────────────────────────────────────
-
-fn verdict_label(eval: &GuardrailEvaluation) -> &'static str {
-    use randstat_core::stats::validate::Status;
-    match eval.overall_status {
-        Status::Pass => "✓ LIKELY RANDOM",
-        Status::Warn => "⚠ ARTIFICIAL UNIFORMITY/STRUCTURED",
-        Status::Fail => {
-            if eval.chi_square_status == Status::Fail && eval.pochisq_exceed_prob > 0.9999 {
-                "⚠ ARTIFICIAL UNIFORMITY/STRUCTURED"
-            } else {
-                "⚠ LIKELY BIASED/ANOMALY"
-            }
-        }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use randstat_core::stats::ent_result::EntResult;
-    use randstat_core::stats::validate::evaluate_guardrails;
-
-    #[test]
-    fn test_report_formatters() {
-        assert_eq!(format_bytes(500), "500 B");
-        assert_eq!(format_bytes(1024), "1.00 KB");
-        assert_eq!(format_bytes(1024 * 1024), "1.00 MB");
-        assert_eq!(format_bytes(1024 * 1024 * 1024), "1.00 GB");
-
-        let digest = [0u8; 32];
-        assert_eq!(sha256_hex(&digest), "0000000000000000000000000000000000000000000000000000000000000000");
-
-        assert_eq!(fmt_chip(0.00001), "< 0.01%");
-        assert_eq!(fmt_chip(0.99999), "> 99.99%");
-        assert_eq!(fmt_chip(0.5), "50.00%");
-
-        assert_eq!(fmt_scc(-90001.0), "Undefined");
-        assert_eq!(fmt_scc(0.001), "0.001000");
-
-        let res = EntResult {
-            total_bytes: 1000,
-            entropy_bits_per_byte: 7.95,
-            compression_percent: 0.5,
-            chi_square: 250.0,
-            mean: 127.4,
-            monte_carlo_pi: 3.1415,
-            serial_correlation: 0.005,
-            sha256: [0; 32],
-        };
-        let eval = evaluate_guardrails(&res, 0.05);
-
-        // Call print functions to ensure they run and don't panic
-        print_markdown(&res, &eval, "test_file", 0.05);
-        print_json(&res, &eval, "test_file", 0.05);
-        print_terminal(&res, &eval, "test_file", 0.05, false);
-        print_terminal(&res, &eval, "test_file", 0.05, true);
-
-        // Test other status paths in verdict_label
-        let res_fail_chi_high = EntResult {
-            chi_square: 0.0, // perfect uniform -> pochisq exceed prob = 1.0 > 0.9999
-            ..res
-        };
-        let eval_fail_chi_high = evaluate_guardrails(&res_fail_chi_high, 0.05);
-        // This triggers the other branches of verdict_label
-        print_terminal(&res_fail_chi_high, &eval_fail_chi_high, "test_file", 0.05, false);
-
-        let res_warn_chi = EntResult {
-            chi_square: 10.0,
-            ..res
-        };
-        let eval_warn_chi = evaluate_guardrails(&res_warn_chi, 0.05);
-        print_terminal(&res_warn_chi, &eval_warn_chi, "test_file", 0.05, false);
-    }
 }

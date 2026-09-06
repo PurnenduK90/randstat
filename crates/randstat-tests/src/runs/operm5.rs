@@ -1,4 +1,4 @@
-//! Dieharder: OPERM5 — Overlapping Permutations of 5 Test (stub).
+//! Dieharder: OPERM5 Ã¢â‚¬â€ Overlapping Permutations of 5 Test (stub).
 //!
 //! Takes overlapping groups of 5 consecutive integers from the stream and
 //! records which of the 120 possible orderings (permutations of 5 elements)
@@ -7,7 +7,7 @@
 //!
 //! Highly sensitive to weak linear congruential generators and short-period PRNGs.
 //!
-//! **Status: Stub** — accumulates total bytes; returns dummy p-value of 0.5.
+//! **Status: Stub** Ã¢â‚¬â€ accumulates total bytes; returns dummy p-value of 0.5.
 
 use randstat_core::traits::{StreamTest, TestResult};
 
@@ -36,10 +36,6 @@ impl StreamTest for Operm5Test {
         // TODO: read stream as u32 values; for each overlapping window of 5,
         //       determine the rank ordering (1 of 120 permutations);
         //       accumulate 120-bin frequency table; chi-square vs expected.
-        TestResult {
-            statistic: 0.0,
-            p_value: 0.5,
-            passed: true,
-        }
+        TestResult::NOT_IMPLEMENTED
     }
 }

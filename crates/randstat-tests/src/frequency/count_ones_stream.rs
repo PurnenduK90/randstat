@@ -1,19 +1,19 @@
 //! Dieharder: Count the 1s in a Stream Test (stub).
 //!
 //! Counts the number of 1-bits in each byte of a stream. The byte value is
-//! mapped to a letter (A–E) based on its popcount (0→A, 1→B, 2→B, 3→C, …, 8→E).
+//! mapped to a letter (AÃ¢â‚¬â€œE) based on its popcount (0Ã¢â€ â€™A, 1Ã¢â€ â€™B, 2Ã¢â€ â€™B, 3Ã¢â€ â€™C, Ã¢â‚¬Â¦, 8Ã¢â€ â€™E).
 //! The resulting letter stream is tested for five-letter word frequencies.
 //!
-//! Detects bias in individual bit positions within bytes — a failure indicates
+//! Detects bias in individual bit positions within bytes Ã¢â‚¬â€ a failure indicates
 //! some bits are significantly more likely to be 0 or 1 than others.
 //!
-//! **Status: Stub** — accumulates byte popcount histogram; returns dummy p-value of 0.5.
+//! **Status: Stub** Ã¢â‚¬â€ accumulates byte popcount histogram; returns dummy p-value of 0.5.
 
 use randstat_core::traits::{StreamTest, TestResult};
 
 /// Count the 1s in a Stream accumulator (stub).
 ///
-/// Tracks a 9-bucket histogram of byte popcount (0–8 ones per byte).
+/// Tracks a 9-bucket histogram of byte popcount (0Ã¢â‚¬â€œ8 ones per byte).
 #[derive(Debug, Clone, Copy)]
 pub struct CountOnesStreamTest {
     pub popcount_hist: [u64; 9], // hist[k] = number of bytes with exactly k one-bits
@@ -47,12 +47,8 @@ impl StreamTest for CountOnesStreamTest {
         self.total_bytes = 0;
     }
     fn evaluate(&self) -> TestResult {
-        // TODO: map bytes to A–E via popcount; accumulate overlapping 5-letter words;
+        // TODO: map bytes to AÃ¢â‚¬â€œE via popcount; accumulate overlapping 5-letter words;
         //       compare 5-word frequency table to expected multinomial distribution.
-        TestResult {
-            statistic: 0.0,
-            p_value: 0.5,
-            passed: true,
-        }
+        TestResult::NOT_IMPLEMENTED
     }
 }

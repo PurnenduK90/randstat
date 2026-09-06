@@ -1,9 +1,9 @@
-//! NIST SP800-22 §2.12 — Approximate Entropy test (stub).
+//! NIST SP800-22 Ã‚Â§2.12 Ã¢â‚¬â€ Approximate Entropy test (stub).
 //!
 //! Compares the frequency of overlapping blocks of two consecutive lengths (m, m+1)
 //! against the expected result for a random sequence.
 //!
-//! **Status: Stub** — accumulates total bits; returns dummy p-value of 0.5.
+//! **Status: Stub** Ã¢â‚¬â€ accumulates total bits; returns dummy p-value of 0.5.
 
 use randstat_core::traits::{StreamTest, TestResult};
 
@@ -29,10 +29,6 @@ impl StreamTest for ApproxEntropyTest {
     }
 
     fn evaluate(&self) -> TestResult {
-        TestResult {
-            statistic: 0.0,
-            p_value: 0.5,
-            passed: true,
-        }
+        TestResult::NOT_IMPLEMENTED
     }
 }

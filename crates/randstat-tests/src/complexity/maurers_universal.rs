@@ -1,14 +1,14 @@
-//! NIST SP800-22 §2.9 — Maurer's Universal Statistical Test (stub).
+//! NIST SP800-22 Ã‚Â§2.9 Ã¢â‚¬â€ Maurer's Universal Statistical Test (stub).
 //!
 //! Detects whether a sequence can be significantly compressed without loss of
 //! information. A significantly compressible sequence is considered non-random.
 //!
 //! The test works by dividing the bit string into `Q` initialisation blocks and
-//! `K` test blocks of length `L` bits each, computing the sum of log₂ distances
+//! `K` test blocks of length `L` bits each, computing the sum of logÃ¢â€šâ€š distances
 //! between matching `L`-bit patterns, and comparing to the expected value for
 //! a truly random sequence.
 //!
-//! **Status: Stub** — accumulates total bits; returns dummy p-value of 0.5.
+//! **Status: Stub** Ã¢â‚¬â€ accumulates total bits; returns dummy p-value of 0.5.
 
 use randstat_core::traits::{StreamTest, TestResult};
 
@@ -37,12 +37,8 @@ impl StreamTest for MaurersUniversalTest {
 
     fn evaluate(&self) -> TestResult {
         // TODO: implement using a 2^L lookup table (table size 128 for L=7).
-        //       Compute fn = (1/K) Σ log₂(dist) and compare to expected variance.
+        //       Compute fn = (1/K) ÃŽÂ£ logÃ¢â€šâ€š(dist) and compare to expected variance.
         //       p-value = erfc(|fn - expectedValue| / (sqrt(2) * sigma)).
-        TestResult {
-            statistic: 0.0,
-            p_value: 0.5,
-            passed: true,
-        }
+        TestResult::NOT_IMPLEMENTED
     }
 }

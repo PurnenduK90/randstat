@@ -31,12 +31,21 @@ impl StreamTest for ArithmeticMeanTest {
     }
 
     fn evaluate(&self) -> TestResult {
+        if self.tracker.total_bytes == 0 {
+            return TestResult::INSUFFICIENT_DATA;
+        }
         let mean = self.tracker.arithmetic_mean();
         let diff = (mean - 127.5).abs();
+        let passed = diff < 1.0;
         TestResult {
             statistic: mean,
             p_value: (1.0 - (diff / 5.0)).clamp(0.0, 1.0),
-            passed: diff < 1.0,
+            passed,
+            status: if passed {
+                randstat_core::traits::TestStatus::Passed
+            } else {
+                randstat_core::traits::TestStatus::Failed
+            },
         }
     }
 }

@@ -1,0 +1,10 @@
+[package]
+name = "randstat-suite-sp800-90b"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Zero-alloc NIST SP800-90B min-entropy evaluation test suite"
+
+[dependencies]
+randstat-core = { workspace = true }
+randstat-tests = { workspace = true }

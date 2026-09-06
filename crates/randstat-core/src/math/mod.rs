@@ -1,6 +1,6 @@
 //! Chi-square, Normal distribution, and related mathematical functions.
 //!
-//! All functions are `#[inline]`-friendly and call only `libm` — no `std` math.
+//! All functions are `#[inline]`-friendly and call only `libm` â€” no `std` math.
 
 pub mod chi2;
 pub mod plot;

@@ -1,4 +1,4 @@
-//! NIST SP800-22 §2.11 — Serial Test (stub).
+//! NIST SP800-22 Ã‚Â§2.11 Ã¢â‚¬â€ Serial Test (stub).
 //!
 //! Tests whether the frequency of all possible overlapping `m`-bit patterns
 //! across the bit string is approximately equal. This is the bit-level
@@ -7,7 +7,7 @@
 //! Note: this is **not** the same as the Serial Correlation test (which is
 //! a byte-level Pearson correlation). This is a frequency test on m-bit tuples.
 //!
-//! **Status: Stub** — accumulates total bits; returns dummy p-value of 0.5.
+//! **Status: Stub** Ã¢â‚¬â€ accumulates total bits; returns dummy p-value of 0.5.
 
 use randstat_core::traits::{StreamTest, TestResult};
 
@@ -36,12 +36,8 @@ impl StreamTest for SerialTest {
 
     fn evaluate(&self) -> TestResult {
         // TODO: build overlapping m-bit and (m-1)-bit pattern frequency tables.
-        //       Compute del_m and del_{m-1} psi² statistics (§2.11.4 formula).
-        //       Two p-values produced; test passes if both ≥ alpha.
-        TestResult {
-            statistic: 0.0,
-            p_value: 0.5,
-            passed: true,
-        }
+        //       Compute del_m and del_{m-1} psiÃ‚Â² statistics (Ã‚Â§2.11.4 formula).
+        //       Two p-values produced; test passes if both Ã¢â€°Â¥ alpha.
+        TestResult::NOT_IMPLEMENTED
     }
 }

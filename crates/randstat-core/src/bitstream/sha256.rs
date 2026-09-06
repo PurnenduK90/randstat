@@ -2,7 +2,7 @@
 //!
 //! Implements FIPS 180-4. Used to fingerprint evaluated byte streams.
 //! Exposed in every WASM build (`sha256_reset`, `sha256_update`, `sha256_finalize`)
-//! regardless of which suite feature is active — SHA-256 is file identity, not a test.
+//! regardless of which suite feature is active â€” SHA-256 is file identity, not a test.
 
 /// Streaming SHA-256 accumulator.
 #[derive(Debug, Clone, Copy)]
@@ -79,7 +79,7 @@ impl Sha256 {
     }
 
     /// Finalises the hash and returns a 32-byte digest.
-    /// Does not modify `self` — safe to call multiple times.
+    /// Does not modify `self` â€” safe to call multiple times.
     pub fn finalize(&self) -> [u8; 32] {
         let mut c = *self;
         let total_bits = c.total_bytes * 8;
