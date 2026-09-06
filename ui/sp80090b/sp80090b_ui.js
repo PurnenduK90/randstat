@@ -1,0 +1,72 @@
+/**
+ * NIST SP 800-90B Web UI Dashboard Renderer
+ * Renders the 10 min-entropy estimators evaluation table and metrics.
+ */
+
+function renderSp80090bDashboard(container, evalResult, options = {}) {
+  if (!container || !evalResult) return;
+
+  const rows = evalResult.entries.map(e => {
+    let badge = '';
+    if (e.status === 'PASS') {
+      badge = '<span style="background:#10b981;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">PASS</span>';
+    } else if (e.status === 'FAIL') {
+      badge = '<span style="background:#f43f5e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">FAIL</span>';
+    } else if (e.status === 'INSUFFICIENT DATA') {
+      badge = '<span style="background:#eab308;color:#1e293b;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">INSUFFICIENT DATA</span>';
+    } else {
+      badge = '<span style="background:#334155;color:#94a3b8;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">NOT IMPLEMENTED</span>';
+    }
+
+    const statStr = e.statistic != null ? e.statistic.toFixed(4) : 'N/A';
+    const pvalStr = e.pValue != null ? e.pValue.toFixed(4) : 'N/A';
+
+    return `
+      <tr style="border-bottom:1px solid #1e293b;">
+        <td style="padding:10px;color:#94a3b8;font-family:monospace;">${e.id}</td>
+        <td style="padding:10px;font-weight:600;color:#f8fafc;">${e.name}</td>
+        <td style="padding:10px;color:#cbd5e1;font-size:12px;">${e.track}</td>
+        <td style="padding:10px;color:#38bdf8;font-family:monospace;">${statStr}</td>
+        <td style="padding:10px;color:#cbd5e1;font-family:monospace;">${pvalStr}</td>
+        <td style="padding:10px;">${badge}</td>
+      </tr>
+    `;
+  }).join('');
+
+  const html = `
+    <div class="randstat-sp80090b-card" style="font-family:system-ui,sans-serif;background:#0f172a;color:#f8fafc;padding:24px;border-radius:12px;border:1px solid #1e293b;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h3 style="margin:0;font-size:18px;font-weight:700;color:#38bdf8;">NIST SP 800-90B Min-Entropy Estimation Suite</h3>
+        <div style="font-size:12px;color:#94a3b8;">
+          Active: <strong style="color:#38bdf8;">${evalResult.implementedCount} / ${evalResult.totalTests}</strong> | 
+          Passed: <strong style="color:#10b981;">${evalResult.passedCount}</strong> | 
+          Failed: <strong style="color:#f43f5e;">${evalResult.failedCount}</strong>
+        </div>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;text-align:left;font-size:13px;">
+          <thead>
+            <tr style="border-bottom:2px solid #334155;color:#94a3b8;">
+              <th style="padding:10px;">Section</th>
+              <th style="padding:10px;">Estimator Name</th>
+              <th style="padding:10px;">Track</th>
+              <th style="padding:10px;">Estimate / Stat</th>
+              <th style="padding:10px;">p-value</th>
+              <th style="padding:10px;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = html;
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { renderSp80090bDashboard };
+}

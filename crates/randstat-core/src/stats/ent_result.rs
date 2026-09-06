@@ -7,7 +7,7 @@ use crate::bitstream::sha256::format_hex;
 
 /// Aggregate statistical result from a complete ENT evaluation.
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct EntResult {
     /// Total bytes evaluated.
     pub total_bytes: u64,
@@ -28,6 +28,17 @@ pub struct EntResult {
 }
 
 impl EntResult {
+    pub const ZERO: Self = Self {
+        total_bytes: 0,
+        entropy_bits_per_byte: 0.0,
+        compression_percent: 0.0,
+        chi_square: 0.0,
+        mean: 0.0,
+        monte_carlo_pi: 0.0,
+        serial_correlation: 0.0,
+        sha256: [0u8; 32],
+    };
+
     /// Returns the compression reduction as an integer percentage (0â€“100).
     #[inline]
     pub fn compression_reduction_int(&self) -> i16 {
@@ -40,5 +51,11 @@ impl EntResult {
         let mut out = [0u8; 64];
         format_hex(&self.sha256, &mut out);
         out
+    }
+}
+
+impl Default for EntResult {
+    fn default() -> Self {
+        Self::ZERO
     }
 }

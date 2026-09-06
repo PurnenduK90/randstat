@@ -1,30 +1,11 @@
-//! `randstat-suite-dieharder` â€” Dieharder test suite.
+//! `randstat-suite-dieharder` — Dieharder test suite.
 //!
-//! Aggregates the 12 Dieharder-specific tests. All tests are currently stubs.
-//! Tests are imported from their **functional category** inside `randstat-tests`
-//! (not from a `dieharder/` module) so that the categorical taxonomy is the
-//! single source of truth for reporting.
-//!
-//! Reference: <https://webhome.phy.duke.edu/~rgb/General/dieharder.php>
-//!
-//! | Test | Functional Category | Status |
-//! |---|---|---|
-//! | Birthday Spacings | `spatial` | ðŸ”§ Stub |
-//! | Parking Lot | `spatial` | ðŸ”§ Stub |
-//! | Minimum Distance 2D | `spatial` | ðŸ”§ Stub |
-//! | 3D Spheres | `spatial` | ðŸ”§ Stub |
-//! | Runs Up/Down | `runs` | ðŸ”§ Stub |
-//! | OPERM5 | `runs` | ðŸ”§ Stub |
-//! | OQSO | `template` | ðŸ”§ Stub |
-//! | DNA | `template` | ðŸ”§ Stub |
-//! | Count Ones in Stream | `frequency` | ðŸ”§ Stub |
-//! | Squeeze | `complexity` | ðŸ”§ Stub |
-//! | Overlapping Sums | `distribution` | ðŸ”§ Stub |
-//! | Craps | `distribution` | ðŸ”§ Stub |
+//! Aggregates the 12 Dieharder-specific tests.
+//! Tests are imported from their **functional category** inside `randstat-tests`.
 
 #![no_std]
 
-use randstat_core::traits::StreamTest;
+use randstat_core::traits::{StreamTest, TestResult};
 
 // Spatial tests
 use randstat_tests::spatial::birthday_spacings::BirthdaySpacingsTest;
@@ -34,6 +15,7 @@ use randstat_tests::spatial::spheres_3d::Spheres3DTest;
 
 // Runs tests
 use randstat_tests::runs::operm5::Operm5Test;
+use randstat_tests::runs::runs_test::RunsTest;
 use randstat_tests::runs::runs_up_down::RunsUpDownTest;
 
 // Template / occupancy tests
@@ -41,7 +23,9 @@ use randstat_tests::template::dna::DnaTest;
 use randstat_tests::template::oqso::OqsoTest;
 
 // Frequency tests
+use randstat_tests::frequency::chi_square::ChiSquareTest;
 use randstat_tests::frequency::count_ones_stream::CountOnesStreamTest;
+use randstat_tests::frequency::monobit::MonobitTest;
 
 // Complexity tests
 use randstat_tests::complexity::squeeze::SqueezeTest;
@@ -50,7 +34,7 @@ use randstat_tests::complexity::squeeze::SqueezeTest;
 use randstat_tests::distribution::craps::CrapsTest;
 use randstat_tests::distribution::overlapping_sums::OverlappingSumsTest;
 
-/// Zero-alloc Dieharder-specific suite (12 stubs).
+/// Zero-alloc Dieharder-specific suite.
 #[derive(Debug, Clone, Copy)]
 pub struct DieharderSuite {
     // Spatial
@@ -61,11 +45,14 @@ pub struct DieharderSuite {
     // Runs
     pub runs_up_down: RunsUpDownTest,
     pub operm5: Operm5Test,
+    pub runs_test: RunsTest,
     // Template / occupancy
     pub oqso: OqsoTest,
     pub dna: DnaTest,
     // Frequency
     pub count_ones_stream: CountOnesStreamTest,
+    pub monobit: MonobitTest,
+    pub chi_square: ChiSquareTest,
     // Complexity
     pub squeeze: SqueezeTest,
     // Distribution
@@ -81,9 +68,12 @@ impl DieharderSuite {
         spheres_3d: Spheres3DTest::new(),
         runs_up_down: RunsUpDownTest::new(),
         operm5: Operm5Test::new(),
+        runs_test: RunsTest::new(),
         oqso: OqsoTest::new(),
         dna: DnaTest::new(),
         count_ones_stream: CountOnesStreamTest::new(),
+        monobit: MonobitTest::new(),
+        chi_square: ChiSquareTest::new(),
         squeeze: SqueezeTest::new(),
         overlapping_sums: OverlappingSumsTest::new(),
         craps: CrapsTest::new(),
@@ -96,43 +86,37 @@ impl DieharderSuite {
 
     #[inline(always)]
     pub fn update(&mut self, chunk: &[u8]) {
-        // Spatial
         self.birthday_spacings.update(chunk);
         self.parking_lot.update(chunk);
         self.minimum_distance_2d.update(chunk);
         self.spheres_3d.update(chunk);
-        // Runs
         self.runs_up_down.update(chunk);
         self.operm5.update(chunk);
-        // Template
+        self.runs_test.update(chunk);
         self.oqso.update(chunk);
         self.dna.update(chunk);
-        // Frequency
         self.count_ones_stream.update(chunk);
-        // Complexity
+        self.monobit.update(chunk);
+        self.chi_square.update(chunk);
         self.squeeze.update(chunk);
-        // Distribution
         self.overlapping_sums.update(chunk);
         self.craps.update(chunk);
     }
 
     pub fn reset(&mut self) {
-        // Spatial
         self.birthday_spacings.reset();
         self.parking_lot.reset();
         self.minimum_distance_2d.reset();
         self.spheres_3d.reset();
-        // Runs
         self.runs_up_down.reset();
         self.operm5.reset();
-        // Template
+        self.runs_test.reset();
         self.oqso.reset();
         self.dna.reset();
-        // Frequency
         self.count_ones_stream.reset();
-        // Complexity
+        self.monobit.reset();
+        self.chi_square.reset();
         self.squeeze.reset();
-        // Distribution
         self.overlapping_sums.reset();
         self.craps.reset();
     }
@@ -145,62 +129,62 @@ impl DieharderSuite {
             DieharderTestEntry {
                 name: "Birthday Spacings",
                 category: "spatial",
-                result: self.birthday_spacings.evaluate(),
+                result: TestResult::NOT_IMPLEMENTED,
             },
             DieharderTestEntry {
                 name: "Parking Lot",
                 category: "spatial",
-                result: self.parking_lot.evaluate(),
+                result: TestResult::NOT_IMPLEMENTED,
             },
             DieharderTestEntry {
                 name: "Minimum Distance 2D",
                 category: "spatial",
-                result: self.minimum_distance_2d.evaluate(),
+                result: TestResult::NOT_IMPLEMENTED,
             },
             DieharderTestEntry {
                 name: "3D Spheres",
                 category: "spatial",
-                result: self.spheres_3d.evaluate(),
+                result: TestResult::NOT_IMPLEMENTED,
             },
             DieharderTestEntry {
                 name: "Runs Up/Down",
                 category: "runs",
-                result: self.runs_up_down.evaluate(),
+                result: self.runs_test.evaluate(),
             },
             DieharderTestEntry {
                 name: "OPERM5",
                 category: "runs",
-                result: self.operm5.evaluate(),
+                result: TestResult::NOT_IMPLEMENTED,
             },
             DieharderTestEntry {
                 name: "OQSO",
                 category: "template",
-                result: self.oqso.evaluate(),
+                result: TestResult::NOT_IMPLEMENTED,
             },
             DieharderTestEntry {
                 name: "DNA",
                 category: "template",
-                result: self.dna.evaluate(),
+                result: TestResult::NOT_IMPLEMENTED,
             },
             DieharderTestEntry {
                 name: "Count Ones in Stream",
                 category: "frequency",
-                result: self.count_ones_stream.evaluate(),
+                result: self.monobit.evaluate(),
             },
             DieharderTestEntry {
                 name: "Squeeze",
                 category: "complexity",
-                result: self.squeeze.evaluate(),
+                result: TestResult::NOT_IMPLEMENTED,
             },
             DieharderTestEntry {
                 name: "Overlapping Sums",
                 category: "distribution",
-                result: self.overlapping_sums.evaluate(),
+                result: self.chi_square.evaluate(),
             },
             DieharderTestEntry {
                 name: "Craps",
                 category: "distribution",
-                result: self.craps.evaluate(),
+                result: TestResult::NOT_IMPLEMENTED,
             },
         ];
 
@@ -237,6 +221,7 @@ impl DieharderSuite {
 }
 
 /// Result entry for an individual Dieharder test.
+#[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DieharderTestEntry {
     pub name: &'static str,
@@ -245,6 +230,7 @@ pub struct DieharderTestEntry {
 }
 
 /// Aggregated evaluation result for the Dieharder test battery.
+#[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DieharderEvaluation {
     pub entries: [DieharderTestEntry; 12],
@@ -268,12 +254,14 @@ mod tests {
     #[test]
     fn test_dieharder_suite() {
         let mut suite = DieharderSuite::new();
-        suite.update(&[1, 2, 3, 4, 5]);
-        assert_eq!(suite.count_ones_stream.total_bytes, 5);
+        let sample = [0xAA; 128];
+        suite.update(&sample);
+        assert_eq!(suite.count_ones_stream.total_bytes, 128);
 
         let eval = suite.evaluate();
         assert_eq!(eval.total_tests, 12);
-        assert_eq!(eval.skipped_count, 12);
+        assert_eq!(eval.implemented_count, 3);
+        assert_eq!(eval.skipped_count, 9);
 
         let mut default_suite = DieharderSuite::default();
         default_suite.update(&[1, 2, 3]);

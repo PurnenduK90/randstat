@@ -14,6 +14,8 @@ pub mod gjrand;
 pub mod nist;
 #[cfg(feature = "practrand")]
 pub mod practrand;
+#[cfg(feature = "quick")]
+pub mod quick;
 #[cfg(feature = "sp800-90b")]
 pub mod sp80090b;
 #[cfg(feature = "testu01")]

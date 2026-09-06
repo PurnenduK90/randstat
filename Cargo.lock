@@ -95,6 +95,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "randstat-suite-quick"
+version = "0.1.0"
+dependencies = [
+ "libm",
+ "randstat-core",
+ "randstat-suite-ent",
+ "randstat-tests",
+]
+
+[[package]]
 name = "randstat-suite-sp800-90b"
 version = "0.1.0"
 dependencies = [
@@ -130,6 +140,7 @@ dependencies = [
  "randstat-suite-gjrand",
  "randstat-suite-nist",
  "randstat-suite-practrand",
+ "randstat-suite-quick",
  "randstat-suite-sp800-90b",
  "randstat-suite-testu01",
 ]

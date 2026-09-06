@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Full Meta-Suite — Randstat WebAssembly</title>
+  <title>Quick Screening & Health Diagnostic Suite — Randstat WebAssembly</title>
   <link rel="stylesheet" href="shared.css">
 </head>
 <body>
@@ -25,13 +25,13 @@
       <div class="nav-section-label">Test Suites</div>
       <ul class="nav-list">
         <li>
-          <a href="index.html" class="nav-item active">
+          <a href="index.html" class="nav-item">
             <span class="icon">🌐</span>
             <span>Full Meta-Suite</span>
           </a>
         </li>
         <li>
-          <a href="quick.html" class="nav-item">
+          <a href="quick.html" class="nav-item active">
             <span class="icon">⚡</span>
             <span>Quick Screen</span>
           </a>
@@ -107,7 +107,7 @@
 
     <div class="sidebar-footer">
       <div>Pure Rust <code>#![no_std]</code> + WebAssembly</div>
-      <div>Package: <code>dist/full/</code></div>
+      <div>Package: <code>dist/quick/</code></div>
     </div>
   </aside>
 
@@ -115,84 +115,29 @@
   <main id="main-content">
     <header class="page-header">
       <div>
-        <h1 class="page-title"><span>🌐</span> Full Meta-Suite Analyzer</h1>
-        <p class="page-desc">Comprehensive randomness battery aggregating Fourmilab ENT, NIST SP 800-22, and BSI AIS 31.</p>
+        <h1 class="page-title"><span>⚡</span> Quick Screening & Health Diagnostics</h1>
+        <p class="page-desc">Comprehensive single-pass diagnostic battery covering Information Density, Spectral Uniformity, Bitwise Independence, Sequential Correlation, and Geometric Convergence.</p>
       </div>
       <div class="page-badges">
-        <span class="page-badge">dist/full/randstat-full.wasm</span>
-        <span class="page-badge">~51.7 KB</span>
+        <span class="page-badge">dist/quick/randstat-quick.wasm</span>
+        <span class="page-badge">Zero Heap Alloc</span>
       </div>
     </header>
 
     <div class="container">
-      <div id="dropzone" class="dropzone">
-        <div class="dropzone-icon">📁</div>
-        <div class="dropzone-title">Drop a binary or text file to analyze across all suites</div>
-        <div class="dropzone-desc">Streaming chunked evaluator — supports any file size (e.g. 10 MB, 100 MB, 1 GB)</div>
-        <input type="file" id="file-input" style="display: none;">
-      </div>
-
-      <div id="dashboard-container"></div>
+      <!-- Embeddable Quick Analyzer Container -->
+      <div id="quickContainer"></div>
     </div>
   </main>
 
-  <!-- Import ONLY Full Bundle from dist/full/ -->
-  <script src="../dist/full/randstat-full.min.js"></script>
+  <!-- Import ONLY Quick Bundle from dist/quick/ -->
+  <script src="../dist/quick/randstat-quick.min.js"></script>
   <script>
-    let runner = null;
-
-    async function init() {
-      runner = await FullSuiteRunner.load('../dist/full/randstat-full.wasm');
-      const container = document.getElementById('dashboard-container');
-      const dropzone = document.getElementById('dropzone');
-      const dropTitle = dropzone.querySelector('.dropzone-title');
-      const fileInput = document.getElementById('file-input');
-
-      async function processFile(file) {
-        if (!file) return;
-        runner.reset();
-        const chunkSize = 64 * 1024;
-        let offset = 0;
-        const total = file.size;
-
-        dropTitle.textContent = `Processing ${file.name} (0%)...`;
-
-        while (offset < total) {
-          const slice = file.slice(offset, offset + chunkSize);
-          const buf = new Uint8Array(await slice.arrayBuffer());
-          runner.update(buf);
-          offset += chunkSize;
-          const pct = Math.min(100, Math.round((offset / total) * 100));
-          dropTitle.textContent = `Evaluating across all suites: ${file.name} (${pct}%)...`;
-        }
-
-        const sizeStr = (total >= 1048576) ? (total / 1048576).toFixed(2) + ' MB' : Math.round(total / 1024) + ' KB';
-        dropTitle.textContent = `✓ Evaluated ${file.name} (${sizeStr})`;
-        const fullData = runner.finalize(0.05);
-        renderFullDashboard(container, fullData);
-      }
-
-      dropzone.addEventListener('click', () => fileInput.click());
-      fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-          processFile(e.target.files[0]);
-        }
+    window.addEventListener('DOMContentLoaded', () => {
+      new QuickAnalyzer('#quickContainer', {
+        wasmUrl: '../dist/quick/randstat-quick.wasm'
       });
-      dropzone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropzone.classList.add('dragover');
-      });
-      dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
-      dropzone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropzone.classList.remove('dragover');
-        if (e.dataTransfer.files.length > 0) {
-          processFile(e.dataTransfer.files[0]);
-        }
-      });
-    }
-
-    window.addEventListener('DOMContentLoaded', init);
+    });
   </script>
 </body>
 </html>

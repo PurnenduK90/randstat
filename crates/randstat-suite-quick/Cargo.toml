@@ -1,0 +1,12 @@
+[package]
+name = "randstat-suite-quick"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Zero-alloc Quick Randomness Diagnostic & Screening Suite"
+
+[dependencies]
+randstat-core = { workspace = true }
+randstat-tests = { workspace = true }
+randstat-suite-ent = { workspace = true }
+libm = { workspace = true }

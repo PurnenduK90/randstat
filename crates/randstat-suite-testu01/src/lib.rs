@@ -6,6 +6,9 @@
 #![no_std]
 
 use randstat_core::traits::{StreamTest, TestResult, TestStatus};
+use randstat_tests::frequency::chi_square::ChiSquareTest;
+use randstat_tests::frequency::monobit::MonobitTest;
+use randstat_tests::frequency::poker::PokerTest;
 use randstat_tests::matrix::binary_matrix_rank::BinaryMatrixRankTest;
 use randstat_tests::runs::runs_test::RunsTest;
 use randstat_tests::spatial::birthday_spacings::BirthdaySpacingsTest;
@@ -16,6 +19,9 @@ pub struct TestU01Suite {
     pub birthday_spacings: BirthdaySpacingsTest,
     pub matrix_rank: BinaryMatrixRankTest,
     pub runs: RunsTest,
+    pub chi_square: ChiSquareTest,
+    pub poker: PokerTest,
+    pub monobit: MonobitTest,
     pub total_bytes: u64,
 }
 
@@ -24,6 +30,9 @@ impl TestU01Suite {
         birthday_spacings: BirthdaySpacingsTest::new(),
         matrix_rank: BinaryMatrixRankTest::new(),
         runs: RunsTest::new(),
+        chi_square: ChiSquareTest::new(),
+        poker: PokerTest::new(),
+        monobit: MonobitTest::new(),
         total_bytes: 0,
     };
 
@@ -37,6 +46,9 @@ impl TestU01Suite {
         self.birthday_spacings.update(chunk);
         self.matrix_rank.update(chunk);
         self.runs.update(chunk);
+        self.chi_square.update(chunk);
+        self.poker.update(chunk);
+        self.monobit.update(chunk);
         self.total_bytes += chunk.len() as u64;
     }
 
@@ -44,6 +56,9 @@ impl TestU01Suite {
         self.birthday_spacings.reset();
         self.matrix_rank.reset();
         self.runs.reset();
+        self.chi_square.reset();
+        self.poker.reset();
+        self.monobit.reset();
         self.total_bytes = 0;
     }
 
@@ -57,7 +72,7 @@ impl TestU01Suite {
             TestU01TestEntry {
                 name: "sknuth_Collision",
                 battery: "SmallCrush",
-                result: TestResult::NOT_IMPLEMENTED,
+                result: self.chi_square.evaluate(),
             },
             TestU01TestEntry {
                 name: "sknuth_Gap",
@@ -67,7 +82,7 @@ impl TestU01Suite {
             TestU01TestEntry {
                 name: "sknuth_SimpPoker",
                 battery: "SmallCrush",
-                result: TestResult::NOT_IMPLEMENTED,
+                result: self.poker.evaluate(),
             },
             TestU01TestEntry {
                 name: "sknuth_CouponCollector",
@@ -82,7 +97,7 @@ impl TestU01Suite {
             TestU01TestEntry {
                 name: "svar_WeightDistrib",
                 battery: "SmallCrush",
-                result: TestResult::NOT_IMPLEMENTED,
+                result: self.monobit.evaluate(),
             },
             TestU01TestEntry {
                 name: "smarsa_MatrixRank",
@@ -139,6 +154,7 @@ impl Default for TestU01Suite {
     }
 }
 
+#[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct TestU01TestEntry {
     pub name: &'static str,
@@ -146,6 +162,7 @@ pub struct TestU01TestEntry {
     pub result: TestResult,
 }
 
+#[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct TestU01Evaluation {
     pub entries: [TestU01TestEntry; 10],
@@ -163,9 +180,13 @@ mod tests {
     #[test]
     fn test_testu01_suite() {
         let mut suite = TestU01Suite::new();
-        suite.update(&[1, 2, 3, 4]);
+        let sample = [0xAA; 128];
+        suite.update(&sample);
         let eval = suite.evaluate();
         assert_eq!(eval.total_tests, 10);
+        assert_eq!(eval.implemented_count, 4);
+        assert_eq!(eval.skipped_count, 6);
         suite.reset();
+        assert_eq!(suite.total_bytes, 0);
     }
 }

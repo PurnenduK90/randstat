@@ -17,6 +17,7 @@ randstat-suite-dieharder = { workspace = true, optional = true }
 randstat-suite-testu01   = { workspace = true, optional = true }
 randstat-suite-practrand = { workspace = true, optional = true }
 randstat-suite-gjrand    = { workspace = true, optional = true }
+randstat-suite-quick     = { workspace = true, optional = true }
 randstat-suite-full      = { workspace = true, optional = true }
 
 [features]
@@ -27,6 +28,8 @@ math-only = []
 generators = []
 # ent: adds ENT streaming engine (Shannon + Monte Carlo + Serial Corr) (~15–18 KB)
 ent       = ["dep:randstat-suite-ent"]
+# quick: adds Quick Randomness Screening & Health Diagnostic Suite (~20 KB)
+quick     = ["dep:randstat-suite-quick"]
 # nist: adds all 15 NIST SP800-22 tests (~30 KB)
 nist      = ["dep:randstat-suite-nist"]
 # sp800-90b: adds NIST SP800-90B min-entropy test suite
@@ -42,4 +45,15 @@ practrand = ["dep:randstat-suite-practrand"]
 # gjrand: adds gjrand streaming PRNG test suite
 gjrand    = ["dep:randstat-suite-gjrand"]
 # full: adds all suites together
-full      = ["dep:randstat-suite-full"]
+full      = [
+    "dep:randstat-suite-full",
+    "ent",
+    "nist",
+    "sp800-90b",
+    "ais31",
+    "dieharder",
+    "testu01",
+    "practrand",
+    "gjrand",
+    "generators",
+]

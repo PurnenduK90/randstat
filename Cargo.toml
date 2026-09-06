@@ -13,6 +13,7 @@ members = [
     "crates/randstat-suite-testu01",
     "crates/randstat-suite-practrand",
     "crates/randstat-suite-gjrand",
+    "crates/randstat-suite-quick",
     "crates/randstat-suite-full",
     # Applications
     "apps/randstat-cli",
@@ -37,6 +38,7 @@ randstat-suite-dieharder = { path = "crates/randstat-suite-dieharder" }
 randstat-suite-testu01   = { path = "crates/randstat-suite-testu01" }
 randstat-suite-practrand = { path = "crates/randstat-suite-practrand" }
 randstat-suite-gjrand    = { path = "crates/randstat-suite-gjrand" }
+randstat-suite-quick     = { path = "crates/randstat-suite-quick" }
 randstat-suite-full      = { path = "crates/randstat-suite-full" }
 # Third-party
 libm = "0.2"

@@ -6,17 +6,26 @@
 
 use randstat_core::traits::{StreamTest, TestResult, TestStatus};
 use randstat_tests::frequency::chi_square::ChiSquareTest;
+use randstat_tests::frequency::poker::PokerTest;
+use randstat_tests::runs::runs_test::RunsTest;
+use randstat_tests::spatial::serial_correlation::SerialCorrelationTest;
 
 /// Zero-alloc gjrand streaming battery.
 #[derive(Debug, Clone, Copy)]
 pub struct GjrandSuite {
     pub chi_square: ChiSquareTest,
+    pub serial_corr: SerialCorrelationTest,
+    pub runs: RunsTest,
+    pub poker: PokerTest,
     pub total_bytes: u64,
 }
 
 impl GjrandSuite {
     pub const ZERO: Self = Self {
         chi_square: ChiSquareTest::new(),
+        serial_corr: SerialCorrelationTest::new(),
+        runs: RunsTest::new(),
+        poker: PokerTest::new(),
         total_bytes: 0,
     };
 
@@ -28,11 +37,17 @@ impl GjrandSuite {
     #[inline(always)]
     pub fn update(&mut self, chunk: &[u8]) {
         self.chi_square.update(chunk);
+        self.serial_corr.update(chunk);
+        self.runs.update(chunk);
+        self.poker.update(chunk);
         self.total_bytes += chunk.len() as u64;
     }
 
     pub fn reset(&mut self) {
         self.chi_square.reset();
+        self.serial_corr.reset();
+        self.runs.reset();
+        self.poker.reset();
         self.total_bytes = 0;
     }
 
@@ -46,17 +61,17 @@ impl GjrandSuite {
             GjrandTestEntry {
                 name: "Word Correlation",
                 profile: "Standard",
-                result: TestResult::NOT_IMPLEMENTED,
+                result: self.serial_corr.evaluate(),
             },
             GjrandTestEntry {
                 name: "Run Structure",
                 profile: "Standard",
-                result: TestResult::NOT_IMPLEMENTED,
+                result: self.runs.evaluate(),
             },
             GjrandTestEntry {
                 name: "Poker Variations",
                 profile: "Standard",
-                result: TestResult::NOT_IMPLEMENTED,
+                result: self.poker.evaluate(),
             },
         ];
 
@@ -98,6 +113,7 @@ impl Default for GjrandSuite {
     }
 }
 
+#[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct GjrandTestEntry {
     pub name: &'static str,
@@ -105,6 +121,7 @@ pub struct GjrandTestEntry {
     pub result: TestResult,
 }
 
+#[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct GjrandEvaluation {
     pub entries: [GjrandTestEntry; 4],
@@ -122,9 +139,13 @@ mod tests {
     #[test]
     fn test_gjrand_suite() {
         let mut suite = GjrandSuite::new();
-        suite.update(&[1, 2, 3]);
+        let sample = [0xAA; 128];
+        suite.update(&sample);
         let eval = suite.evaluate();
         assert_eq!(eval.total_tests, 4);
+        assert_eq!(eval.implemented_count, 4);
+        assert_eq!(eval.skipped_count, 0);
         suite.reset();
+        assert_eq!(suite.total_bytes, 0);
     }
 }
